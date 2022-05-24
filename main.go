@@ -16,30 +16,14 @@ func main() {
 			},
 			{
 				Name: "var2",
-				Type: types.Int,
+				Type: types.String,
 			},
 		},
 	}
-	raw_data_1 := []interface{}{"A", 1}
-	row_1 := dataframe.CreateRow(raw_data_1, schema)
+	raw_data := []interface{}{true, 1}
 
-	fmt.Println(row_1)
+	row := dataframe.CreateRow(raw_data, schema)
 
-	fmt.Println("---------------")
-
-	row_2 := dataframe.CreateRow(
-		[]interface{}{"A", 1, 14.444, false},
-	)
-
-	fmt.Println(row_2)
-
-	fmt.Println("---------------")
-
-	row_3 := dataframe.CreateRow(
-		[]interface{}{"A", 1, 14.444, false},
-		[]string{"String_Column", "Integer_Column", "Float_Column", "Boolean_Column"},
-	)
-
-	fmt.Println(row_3)
+	fmt.Println(row)
 
 }

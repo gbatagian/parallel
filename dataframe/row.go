@@ -89,24 +89,37 @@ func createRowWithSchema(v []interface{}, s Schema) Row {
 		panic(msg)
 	}
 
+	for i, value := range v {
+
+		if !(types.IsType(value, s.Columns[i].Type)) {
+			msg := fmt.Sprintf(
+				"Invalid schema provided for row:\n   - Value %v in index position %d is of type %T\n   - Column in schema in position %d is of type %v",
+				value, i, v[i],
+				i, s.Columns[i].Type,
+			)
+			panic(msg)
+		}
+	}
+
 	return Row{Values: v, Schema: s}
 
 }
 
 func CreateRow(v []interface{}, i ...interface{}) Row {
 
-	// Schema was not provided in row definition.
+	// Case1: Schema was not provided in row definition.
 	if len(i) == 0 {
 		return createRowNoSchema(v)
 	}
 
 	input := i[0] // Variadic was used to make i optional, when not missing always evaluated in the 0 index.
 
-	// Arrays of strings with column names was provided in row definition.
+	// Case 2: Array of strings with column names was provided in row definition.
 	if _, ok := input.([]string); ok {
 		return createRowWithColumnNames(v, input.([]string))
 	}
 
-	// Schema was provided in row definition.
+	// Case 3: Schema was provided in row definition.
 	return createRowWithSchema(v, input.(Schema))
+
 }
