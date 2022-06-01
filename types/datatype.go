@@ -9,6 +9,7 @@ const (
 	Float  DataType = "float"
 	Bool   DataType = "bool"
 	String DataType = "string"
+	None   DataType = "none"
 )
 
 func IsType(v interface{}, t DataType) bool {
@@ -28,6 +29,10 @@ func IsType(v interface{}, t DataType) bool {
 		}
 	case string:
 		if t == String {
+			return true
+		}
+	case nil:
+		if t == None {
 			return true
 		}
 	}

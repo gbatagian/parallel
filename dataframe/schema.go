@@ -11,22 +11,32 @@ type Schema struct {
 
 func evalSchemaForRow(r Row, s Schema) bool {
 
+	if len(s.Columns) != len(r.Values) {
+		return false
+	}
+
 	for idx, value := range r.Values {
 		if !(types.IsType(value, s.Columns[idx].Type)) {
 			return false
 		}
 	}
+
 	return true
 
 }
 
 func evalSchemaForRawData(d []interface{}, s Schema) bool {
 
+	if len(s.Columns) != len(d) {
+		return false
+	}
+
 	for idx, value := range d {
 		if !(types.IsType(value, s.Columns[idx].Type)) {
 			return false
 		}
 	}
+
 	return true
 
 }
