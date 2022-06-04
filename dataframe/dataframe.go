@@ -2,7 +2,11 @@ package dataframe
 
 import (
 	"fmt"
+	"math"
+	"os"
 	"parallel/types"
+	"strings"
+	"text/tabwriter"
 )
 
 type Dataframe struct {
@@ -12,14 +16,12 @@ type Dataframe struct {
 
 func (df *Dataframe) updateDataframeSchema(s Schema) {
 
-	df_row_len := len(df.Schema.Columns)
-	schema_len := len(s.Columns)
-	if df_row_len != schema_len {
+	if len(df.Schema.Columns) != len(s.Columns) {
 		df.updateUnevenLengthSchema(s)
 	}
 
 	for idx, c := range s.Columns {
-		if !types.IsType(df.Schema.Columns[idx].Type, c.Type) {
+		if !(types.IsType(df.Schema.Columns[idx].Type, c.Type)) {
 			df.updateColumnTypeInPosition(idx, c.Type)
 		}
 	}
@@ -34,15 +36,15 @@ func (df *Dataframe) updateUnevenLengthSchema(s Schema) {
 
 	for _, c := range s.Columns[df_row_len:] {
 		if types.IsType(c.Type, types.Int) {
-			dummy_values = append(dummy_values, 0)
+			dummy_values = append(dummy_values, math.NaN())
 		} else if types.IsType(c.Type, types.Float) {
-			dummy_values = append(dummy_values, 0.0)
+			dummy_values = append(dummy_values, math.NaN())
 		} else {
 			dummy_values = append(dummy_values, "")
 		}
 	}
-	for _, r := range df.Rows {
-		r.Values = append(r.Values, dummy_values)
+	for idx, r := range df.Rows[:len(df.Rows)-1] {
+		df.Rows[idx].Values = append(r.Values, dummy_values...)
 	}
 
 }
@@ -131,7 +133,9 @@ func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {
 
 		if SchemaOK(row, df.Schema) || len(df.Schema.Columns) == 0 {
 			df.Rows = append(df.Rows, row)
-			df.Schema = schema
+			if len(df.Schema.Columns) == 0 {
+				df.Schema = schema
+			}
 		} else {
 			df.Rows = append(df.Rows, row)
 			df.updateDataframeSchema(row.Schema)
@@ -162,8 +166,26 @@ func CreateDatafeme(rows [][]interface{}, i ...interface{}) Dataframe {
 
 	// Case1: No schema related information was provided in dataframe definition
 	if len(i) == 0 {
-		createDataframeWithNoSchemaInfo(rows)
+		return createDataframeWithNoSchemaInfo(rows)
 	}
 
 	return createDataframeWithSchemaInfo(rows, i)
+}
+
+func (df *Dataframe) Print() {
+	w := tabwriter.NewWriter(os.Stdout, 5, 100, 1, ' ', tabwriter.Debug)
+
+	var column_names []interface{}
+	var column_types []interface{}
+	for _, c := range df.Schema.Columns {
+		column_names = append(column_names, c.Name)
+		column_types = append(column_types, c.Type)
+	}
+	fmt.Fprintf(w, strings.Repeat("%v\t", len(df.Schema.Columns))+"\n", column_names...)
+	fmt.Fprintf(w, strings.Repeat("(type: %v)\t", len(df.Schema.Columns))+"\n", column_types...)
+
+	for _, r := range df.Rows {
+		fmt.Fprintf(w, strings.Repeat("%v\t", len(df.Schema.Columns))+"\n", r.Values...)
+	}
+	w.Flush()
 }

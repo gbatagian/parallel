@@ -1,29 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"parallel/dataframe"
-	"parallel/types"
 )
 
 func main() {
 
-	schema := dataframe.Schema{
-		Columns: []dataframe.Column{
-			{
-				Name: "var1",
-				Type: types.String,
-			},
-			{
-				Name: "var2",
-				Type: types.String,
-			},
-		},
+	raw_values := [][]interface{}{
+		{1, "a", false, 1.1},
+		{"2.1", "b", true, 2.2, 1, 1.1, "a", true},
 	}
-	raw_data := []interface{}{true, 1}
 
-	row := dataframe.CreateRow(raw_data, schema)
+	df := dataframe.CreateDatafeme(raw_values)
 
-	fmt.Println(row)
+	df.Print()
 
 }

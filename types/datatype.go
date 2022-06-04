@@ -31,8 +31,8 @@ func IsType(v interface{}, t DataType) bool {
 		if t == String {
 			return true
 		}
-	case nil:
-		if t == None {
+	case DataType:
+		if v == t {
 			return true
 		}
 	}
