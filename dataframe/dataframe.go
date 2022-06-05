@@ -3,10 +3,7 @@ package dataframe
 import (
 	"fmt"
 	"math"
-	"os"
 	"parallel/types"
-	"strings"
-	"text/tabwriter"
 )
 
 type Dataframe struct {
@@ -18,6 +15,7 @@ func (df *Dataframe) updateDataframeSchema(s Schema) {
 
 	if len(df.Schema.Columns) != len(s.Columns) {
 		df.updateUnevenLengthSchema(s)
+		//! Add functionality for when the length of the values is less than the length of the schhema
 	}
 
 	for idx, c := range s.Columns {
@@ -164,28 +162,10 @@ func createDataframeWithSchemaInfo(rows [][]interface{}, i interface{}) Datafram
 
 func CreateDatafeme(rows [][]interface{}, i ...interface{}) Dataframe {
 
-	// Case1: No schema related information was provided in dataframe definition
+	// Case1: No schema related information was provided in dataframe definition.
 	if len(i) == 0 {
 		return createDataframeWithNoSchemaInfo(rows)
 	}
 
 	return createDataframeWithSchemaInfo(rows, i)
-}
-
-func (df *Dataframe) Print() {
-	w := tabwriter.NewWriter(os.Stdout, 5, 100, 1, ' ', tabwriter.Debug)
-
-	var column_names []interface{}
-	var column_types []interface{}
-	for _, c := range df.Schema.Columns {
-		column_names = append(column_names, c.Name)
-		column_types = append(column_types, c.Type)
-	}
-	fmt.Fprintf(w, strings.Repeat("%v\t", len(df.Schema.Columns))+"\n", column_names...)
-	fmt.Fprintf(w, strings.Repeat("(type: %v)\t", len(df.Schema.Columns))+"\n", column_types...)
-
-	for _, r := range df.Rows {
-		fmt.Fprintf(w, strings.Repeat("%v\t", len(df.Schema.Columns))+"\n", r.Values...)
-	}
-	w.Flush()
 }
