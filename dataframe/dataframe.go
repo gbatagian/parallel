@@ -11,6 +11,15 @@ type Dataframe struct {
 	Schema Schema
 }
 
+func (df1 *Dataframe) Equals(df2 Dataframe) bool {
+	for idx, r := range df1.Rows {
+		if !r.Equals(df2.Rows[idx]) {
+			return false
+		}
+	}
+	return true
+}
+
 func (df *Dataframe) updateDataframeSchema(s Schema) {
 
 	if len(df.Schema.Columns) != len(s.Columns) {

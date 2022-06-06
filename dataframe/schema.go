@@ -9,6 +9,18 @@ type Schema struct {
 	Columns []Column
 }
 
+func (s1 *Schema) Equals(s2 Schema) bool {
+	if len(s1.Columns) != len(s2.Columns) {
+		return false
+	}
+	for idx, c := range s1.Columns {
+		if !c.Equals(s2.Columns[idx]) {
+			return false
+		}
+	}
+	return true
+}
+
 func evalSchemaForRow(r Row, s Schema) bool {
 
 	if len(s.Columns) != len(r.Values) {

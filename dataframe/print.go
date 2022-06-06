@@ -7,8 +7,8 @@ import (
 
 // Formatted print method for dataframes
 func (df *Dataframe) Print(n ...int) {
-
 	// Variadic was used in the `n` argument in order to make the argument optional.
+
 	numberOfRows := 5
 	if len(n) > 0 {
 		numberOfRows = n[0] // When input provided, always evaluated in zero index.

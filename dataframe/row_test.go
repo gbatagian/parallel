@@ -3,8 +3,6 @@ package dataframe
 import (
 	"parallel/types"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRowCreationWithSchema(t *testing.T) {
@@ -25,7 +23,9 @@ func TestRowCreationWithSchema(t *testing.T) {
 
 	row := CreateRow(raw_data, schema)
 
-	assert.Equal(t, row, Row{Values: raw_data, Schema: schema})
+	if !row.Equals(Row{Values: raw_data, Schema: schema}) {
+		t.Error("Rows should be equal.")
+	}
 }
 
 func TestRowCreationWithNonSchema(t *testing.T) {
@@ -33,8 +33,7 @@ func TestRowCreationWithNonSchema(t *testing.T) {
 	values := []interface{}{"A", 1, 1.444, false}
 	row := CreateRow(values)
 
-	assert.Equal(
-		t, row,
+	if !row.Equals(
 		Row{
 			Values: values,
 			Schema: Schema{
@@ -58,7 +57,9 @@ func TestRowCreationWithNonSchema(t *testing.T) {
 				},
 			},
 		},
-	)
+	) {
+		t.Error("Rows should be equal.")
+	}
 
 }
 
@@ -70,8 +71,7 @@ func TestRowCreationWithColumnNames(t *testing.T) {
 		[]string{"A", "B", "C", "D"},
 	)
 
-	assert.Equal(
-		t, row,
+	if !row.Equals(
 		Row{
 			Values: values,
 			Schema: Schema{
@@ -95,6 +95,8 @@ func TestRowCreationWithColumnNames(t *testing.T) {
 				},
 			},
 		},
-	)
+	) {
+		t.Error("Rows should be equal.")
+	}
 
 }

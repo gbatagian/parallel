@@ -10,6 +10,18 @@ type Row struct {
 	Schema Schema
 }
 
+func (r1 *Row) Equals(r2 Row) bool {
+	if !r1.Schema.Equals(r2.Schema) {
+		return false
+	}
+	for idx, v := range r1.Values {
+		if v != r2.Values[idx] {
+			return false
+		}
+	}
+	return true
+}
+
 func (r *Row) createSchema() Schema {
 
 	var s Schema
