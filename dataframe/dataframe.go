@@ -20,28 +20,41 @@ func (df1 *Dataframe) Equals(df2 Dataframe) bool {
 	return true
 }
 
-func (df *Dataframe) updateDataframeSchema(s Schema) {
+func (df *Dataframe) updateDataframeSchema(r Row) {
 
-	if len(df.Schema.Columns) != len(s.Columns) {
-		df.updateUnevenLengthSchema(s)
-		//! Add functionality for when the length of the values is less than the length of the schhema
+	df_schema_len := len(df.Schema.Columns)
+	row_schema_len := len(r.Schema.Columns)
+
+	if df_schema_len < row_schema_len {
+		// row has a larger schema (more values than the df columnd)
+		df.updateDfSchemaFromRowWithmLargerSchema(r)
+	} else {
+		// row has a smaller schema (less values than the df columnd)
+		df.applyDfSchemaInRowWithSmallerSchema(r)
+
 	}
 
+	df.updateColumnsTypesBasedOnSchema(r.Schema)
+
+}
+
+func (df *Dataframe) updateColumnsTypesBasedOnSchema(s Schema) {
 	for idx, c := range s.Columns {
 		if !(types.IsType(df.Schema.Columns[idx].Type, c.Type)) {
 			df.updateColumnTypeInPosition(idx, c.Type)
 		}
 	}
-
 }
 
-func (df *Dataframe) updateUnevenLengthSchema(s Schema) {
+func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r Row) {
 
-	df_row_len := len(df.Schema.Columns)
-	df.Schema.Columns = append(df.Schema.Columns, s.Columns[df_row_len:]...)
+	// Extend df schema with the extra columns present in row
+	df_schema_len := len(df.Schema.Columns)
+	df.Schema.Columns = append(df.Schema.Columns, r.Schema.Columns[df_schema_len:]...)
 	var dummy_values []interface{}
 
-	for _, c := range s.Columns[df_row_len:] {
+	// Create dummy values to populate the extra columns on the previous rows
+	for _, c := range r.Schema.Columns[df_schema_len:] {
 		if types.IsType(c.Type, types.Int) {
 			dummy_values = append(dummy_values, math.NaN())
 		} else if types.IsType(c.Type, types.Float) {
@@ -50,9 +63,30 @@ func (df *Dataframe) updateUnevenLengthSchema(s Schema) {
 			dummy_values = append(dummy_values, "")
 		}
 	}
+	// Populate previous rows with dummy values
 	for idx, r := range df.Rows[:len(df.Rows)-1] {
 		df.Rows[idx].Values = append(r.Values, dummy_values...)
 	}
+
+}
+
+func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r Row) {
+
+	// Add dummy values to the row in order to complu with the df larger schema
+	row_len := len(r.Schema.Columns)
+	var dummy_values []interface{}
+
+	for _, c := range df.Schema.Columns[row_len:] {
+		if types.IsType(c.Type, types.Int) {
+			dummy_values = append(dummy_values, math.NaN())
+		} else if types.IsType(c.Type, types.Float) {
+			dummy_values = append(dummy_values, math.NaN())
+		} else {
+			dummy_values = append(dummy_values, "")
+		}
+	}
+
+	df.Rows[len(df.Rows)-1].Values = append(df.Rows[len(df.Rows)-1].Values, dummy_values...)
 
 }
 
@@ -90,33 +124,26 @@ func (df *Dataframe) updateValuesFormatInPosition(idx int, f types.DataType) {
 	case types.Int:
 		for _, r := range df.Rows {
 			if !types.IsType(r.Values[idx], f) {
-				v1, ok1 := r.Values[idx].(float64)
-				v2, ok2 := r.Values[idx].(float32)
-				if ok1 {
-					r.Values[idx] = int(v1)
-				} else if ok2 {
-					r.Values[idx] = int(v2)
+				if v, ok := r.Values[idx].(float64); ok {
+					r.Values[idx] = int(v)
+				} else if v, ok := r.Values[idx].(float32); ok {
+					r.Values[idx] = int(v)
 				}
 			}
 		}
 	case types.Float:
 		for _, r := range df.Rows {
 			if !types.IsType(r.Values[idx], f) {
-				v1, ok1 := r.Values[idx].(int)
-				v2, ok2 := r.Values[idx].(int8)
-				v3, ok3 := r.Values[idx].(int16)
-				v4, ok4 := r.Values[idx].(int32)
-				v5, ok5 := r.Values[idx].(int64)
-				if ok1 {
-					r.Values[idx] = float64(v1)
-				} else if ok2 {
-					r.Values[idx] = float64(v2)
-				} else if ok3 {
-					r.Values[idx] = float64(v3)
-				} else if ok4 {
-					r.Values[idx] = float64(v4)
-				} else if ok5 {
-					r.Values[idx] = float64(v5)
+				if v, ok := r.Values[idx].(int); ok {
+					r.Values[idx] = float64(v)
+				} else if v, ok := r.Values[idx].(int8); ok {
+					r.Values[idx] = float64(v)
+				} else if v, ok := r.Values[idx].(int16); ok {
+					r.Values[idx] = float64(v)
+				} else if v, ok := r.Values[idx].(int32); ok {
+					r.Values[idx] = float64(v)
+				} else if v, ok := r.Values[idx].(int64); ok {
+					r.Values[idx] = float64(v)
 				}
 			}
 		}
@@ -145,7 +172,7 @@ func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {
 			}
 		} else {
 			df.Rows = append(df.Rows, row)
-			df.updateDataframeSchema(row.Schema)
+			df.updateDataframeSchema(row)
 		}
 
 	}
