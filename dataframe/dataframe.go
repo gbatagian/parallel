@@ -164,16 +164,15 @@ func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {
 
 		row := CreateRow(r)
 		schema := row.Schema
+		df.Rows = append(df.Rows, row)
 
-		if SchemaOK(row, df.Schema) || len(df.Schema.Columns) == 0 {
-			df.Rows = append(df.Rows, row)
-			if len(df.Schema.Columns) == 0 {
-				df.Schema = schema
-			}
-		} else {
-			df.Rows = append(df.Rows, row)
+		if len(df.Schema.Columns) == 0 {
+			df.Schema = schema
+		} // Initialise schema
+
+		if !SchemaOK(row, df.Schema) {
 			df.updateDataframeSchema(row)
-		}
+		} // Update schema - if needed
 
 	}
 
@@ -181,19 +180,38 @@ func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {
 
 }
 
-func createDataframeWithSchemaInfo(rows [][]interface{}, i interface{}) Dataframe {
+func createDataframeWithColumnNames(rows [][]interface{}, c []string) Dataframe {
 
 	df := Dataframe{}
 
-	// Case 1: The provided info is the column names.
-	if _, ok := i.([]string); ok {
-		for _, r := range rows {
-			df.Rows = append(df.Rows, CreateRow(r))
-		}
+	for _, r := range rows {
+		row := CreateRow(r, c)
+		schema := row.Schema
+		df.Rows = append(df.Rows, row)
+		if len(df.Schema.Columns) == 0 {
+			df.Schema = schema
+		} // Initialise schema
+
+		if !SchemaOK(row, df.Schema) {
+			df.updateDataframeSchema(row)
+		} // Update schema - if needed
 	}
 
 	return df
 
+}
+
+func createDataframeWithSchema(rows [][]interface{}, s Schema) Dataframe {
+
+	df := Dataframe{}
+	df.Schema = s
+
+	for _, r := range rows {
+		row := CreateRow(r, s)
+		df.Rows = append(df.Rows, row)
+	}
+
+	return df
 }
 
 func CreateDatafeme(rows [][]interface{}, i ...interface{}) Dataframe {
@@ -203,5 +221,13 @@ func CreateDatafeme(rows [][]interface{}, i ...interface{}) Dataframe {
 		return createDataframeWithNoSchemaInfo(rows)
 	}
 
-	return createDataframeWithSchemaInfo(rows, i)
+	input := i[0] // Variadic was used to make i optional, when not missing always evaluated in the 0 index.
+
+	// Case 2: The provided info is the column names.
+	if column_names, ok := input.([]string); ok {
+		return createDataframeWithColumnNames(rows, column_names)
+	}
+
+	// Case 3: Schema was provided
+	return createDataframeWithSchema(rows, input.(Schema))
 }
