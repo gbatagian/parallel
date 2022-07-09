@@ -1,5 +1,9 @@
 package types
 
+import (
+	"math"
+)
+
 // DataType is generic enumeration (enum type) which represents possible column
 // data types.
 type DataType string
@@ -9,7 +13,6 @@ const (
 	Float  DataType = "float"
 	Bool   DataType = "bool"
 	String DataType = "string"
-	None   DataType = "none"
 )
 
 func IsType(v interface{}, t DataType) bool {
@@ -22,6 +25,19 @@ func IsType(v interface{}, t DataType) bool {
 	case float32, float64:
 		if t == Float {
 			return true
+		}
+		if t == Int {
+			// math.NaN() can be used as Int: IsType(math.NaN(), Int) --> true
+			if v, ok := v.(float32); ok {
+				if math.IsNaN(float64(v)) {
+					return true
+				}
+			}
+			if v, ok := v.(float64); ok {
+				if math.IsNaN(v) {
+					return true
+				}
+			}
 		}
 	case bool:
 		if t == Bool {
