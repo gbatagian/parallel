@@ -18,7 +18,7 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 		{"2.1", "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a", true},
 	}
 
-	df := CreateDatafeme(raw_values)
+	df := CreateDataframe(raw_values)
 
 	expected_df_schema := Schema{
 		Columns: []Column{
@@ -72,7 +72,7 @@ func TestDataframeCreationWithColumnNames(t *testing.T) {
 		{"2.1", "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a", "true"},
 	}
 
-	df := CreateDatafeme(raw_values, []string{"a", "b", "c", "d", "e", "f", "g", "h"})
+	df := CreateDataframe(raw_values, []string{"a", "b", "c", "d", "e", "f", "g", "h"})
 
 	expected_df_schema := Schema{
 		Columns: []Column{
@@ -158,9 +158,77 @@ func TestDataframeCreationWithSchema(t *testing.T) {
 			},
 		},
 	}
-	df := CreateDatafeme(raw_values, schema)
+	df := CreateDataframe(raw_values, schema)
 
 	if !df.Schema.Equals(schema) {
 		t.Error("Schemas should be equal.")
 	}
+}
+
+func TestDataframeColumnNames(t *testing.T) {
+
+	schema := Schema{
+		Columns: []Column{
+			{
+				Name: "a",
+				Type: types.Int,
+			},
+			{
+				Name: "b",
+				Type: types.Int,
+			},
+		},
+	}
+
+	df := CreateDataframe(
+		[][]interface{}{
+			{1, 0},
+			{0, 1},
+		},
+		schema,
+	)
+
+	names := df.ColumnNames()
+	expected_names := []string{"a", "b"}
+
+	for idx := range names {
+		if !(names[idx] == expected_names[idx]) {
+			t.Error("Column names should be equal.")
+		}
+	}
+
+}
+
+func TestDataframeColumnTypes(t *testing.T) {
+
+	schema := Schema{
+		Columns: []Column{
+			{
+				Name: "a",
+				Type: types.Int,
+			},
+			{
+				Name: "b",
+				Type: types.Int,
+			},
+		},
+	}
+
+	df := CreateDataframe(
+		[][]interface{}{
+			{1, 0},
+			{0, 1},
+		},
+		schema,
+	)
+
+	tps := df.ColumnTypes()
+	expected_types := []types.DataType{types.Int, types.Int}
+
+	for idx := range tps {
+		if !(tps[idx] == expected_types[idx]) {
+			t.Error("Column types should be equal.")
+		}
+	}
+
 }

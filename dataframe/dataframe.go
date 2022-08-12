@@ -20,6 +20,25 @@ func (df1 *Dataframe) Equals(df2 Dataframe) bool {
 	return true
 }
 
+func (df *Dataframe) ColumnNames() []string {
+	var n []string
+
+	for _, c := range df.Schema.Columns {
+		n = append(n, c.Name)
+	}
+	return n
+}
+
+func (df *Dataframe) ColumnTypes() []types.DataType {
+	var t []types.DataType
+
+	for _, c := range df.Schema.Columns {
+		t = append(t, c.Type)
+	}
+
+	return t
+}
+
 func (df *Dataframe) updateDataframeSchema(r Row) {
 
 	df_schema_len := len(df.Schema.Columns)
@@ -214,7 +233,7 @@ func createDataframeWithSchema(rows [][]interface{}, s Schema) Dataframe {
 	return df
 }
 
-func CreateDatafeme(rows [][]interface{}, i ...interface{}) Dataframe {
+func CreateDataframe(rows [][]interface{}, i ...interface{}) Dataframe {
 
 	// Case1: No schema related information was provided in dataframe definition.
 	if len(i) == 0 {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"parallel/dataframe"
 	"parallel/types"
@@ -47,8 +48,10 @@ func main() {
 			},
 		},
 	}
-	df := dataframe.CreateDatafeme(raw_values, schema)
+	df := dataframe.CreateDataframe(raw_values, schema)
 
 	df.Print()
+
+	fmt.Println(df.ColumnTypes())
 
 }
