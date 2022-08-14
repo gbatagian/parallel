@@ -49,7 +49,7 @@ func (df *Dataframe) updateDataframeSchema(r Row) {
 		df.updateDfSchemaFromRowWithmLargerSchema(r)
 	} else {
 		// row has a smaller schema (less values than the df columnd)
-		df.applyDfSchemaInRowWithSmallerSchema(r)
+		df.applyDfSchemaInRowWithSmallerSchema(&r)
 
 	}
 
@@ -73,15 +73,21 @@ func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r Row) {
 	var dummy_values []interface{}
 
 	// Create dummy values to populate the extra columns on the previous rows
-	for _, c := range r.Schema.Columns[df_schema_len:] {
+	for idx, c := range r.Schema.Columns[df_schema_len:] {
+		dfColumnIdx := idx + df_schema_len
+
 		if types.IsType(c.Type, types.Int) {
 			dummy_values = append(dummy_values, math.NaN())
 		} else if types.IsType(c.Type, types.Float) {
 			dummy_values = append(dummy_values, math.NaN())
-		} else {
+		} else if types.IsType(c.Type, types.String) {
 			dummy_values = append(dummy_values, "")
+		} else if types.IsType(c.Type, types.Bool) {
+			dummy_values = append(dummy_values, "")
+			df.Schema.Columns[dfColumnIdx].Type = types.String // because "" was used as dummy value for the missing bool value
 		}
 	}
+
 	// Populate previous rows with dummy values
 	for idx, r := range df.Rows[:len(df.Rows)-1] {
 		df.Rows[idx].Values = append(r.Values, dummy_values...)
@@ -89,19 +95,26 @@ func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r Row) {
 
 }
 
-func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r Row) {
+func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r *Row) {
 
 	// Add dummy values to the row in order to complu with the df larger schema
 	row_len := len(r.Schema.Columns)
 	var dummy_values []interface{}
 
 	for _, c := range df.Schema.Columns[row_len:] {
+
 		if types.IsType(c.Type, types.Int) {
 			dummy_values = append(dummy_values, math.NaN())
+			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.Int})
 		} else if types.IsType(c.Type, types.Float) {
 			dummy_values = append(dummy_values, math.NaN())
-		} else {
+			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.Float})
+		} else if types.IsType(c.Type, types.String) {
 			dummy_values = append(dummy_values, "")
+			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.String})
+		} else if types.IsType(c.Type, types.Bool) {
+			dummy_values = append(dummy_values, "")
+			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.String}) // because "" was used as dummy value for the missing bool value
 		}
 	}
 

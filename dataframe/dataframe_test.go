@@ -1,6 +1,7 @@
 package dataframe
 
 import (
+	"fmt"
 	"math"
 	"parallel/types"
 	"testing"
@@ -8,27 +9,36 @@ import (
 
 func TestDataframeCreationWithNoSchema(t *testing.T) {
 
-	raw_values := [][]interface{}{
-		{1},
-		{"2.1", "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a", true},
-		{"2.1", "2022-06-01 19:58:30.991242+00", "b", true},
-		{5},
-		{true, 2},
-		{"2.1", "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a", "true"},
-		{"2.1", "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a", true},
+	var raw_values [][]interface{}
+	var df Dataframe
+	var expected_df_schema Schema
+
+	// Case 1: mix
+	raw_values = [][]interface{}{
+		{1, 2.1},
+		{2, 2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, 1, true},
+		{3, 2.1, "2022-06-01 19:58:30.991242+00", "b", true},
+		{4},
+		{5, 2.1, 2},
+		{6, 2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a", "true"},
+		{7, 2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, 1, true},
 	}
 
-	df := CreateDataframe(raw_values)
+	df = CreateDataframe(raw_values)
 
-	expected_df_schema := Schema{
+	for _, c := range df.Schema.Columns {
+		fmt.Println(c.Name)
+		fmt.Println(c.Type)
+	}
+	expected_df_schema = Schema{
 		Columns: []Column{
 			{
 				Name: "column_0",
-				Type: types.String,
+				Type: types.Int,
 			},
 			{
 				Name: "column_1",
-				Type: types.String,
+				Type: types.Float,
 			},
 			{
 				Name: "column_2",
@@ -36,22 +46,76 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 			},
 			{
 				Name: "column_3",
-				Type: types.Bool,
-			},
-			{
-				Name: "column_4",
-				Type: types.Float,
-			},
-			{
-				Name: "column_5",
-				Type: types.Int,
-			},
-			{
-				Name: "column_6",
 				Type: types.String,
 			},
 			{
+				Name: "column_4",
+				Type: types.String,
+			},
+			{
+				Name: "column_5",
+				Type: types.Float,
+			},
+			{
+				Name: "column_6",
+				Type: types.Int,
+			},
+			{
 				Name: "column_7",
+				Type: types.String,
+			},
+			{
+				Name: "column_8",
+				Type: types.String,
+			},
+		},
+	}
+
+	if !df.Schema.Equals(expected_df_schema) {
+		t.Error("Schemas should be equal.")
+	}
+
+	// Case 2: row with missing bool values - BUGFIX
+	raw_values = [][]interface{}{
+		{1, false},
+		{2},
+	}
+
+	df = CreateDataframe(raw_values)
+
+	expected_df_schema = Schema{
+		Columns: []Column{
+			{
+				Name: "column_0",
+				Type: types.Int,
+			},
+			{
+				Name: "column_1",
+				Type: types.String,
+			},
+		},
+	}
+
+	if !df.Schema.Equals(expected_df_schema) {
+		t.Error("Schemas should be equal.")
+	}
+
+	// Case 3: row with extra bool value - BUGFIX
+	raw_values = [][]interface{}{
+		{2},
+		{1, false},
+	}
+
+	df = CreateDataframe(raw_values)
+
+	expected_df_schema = Schema{
+		Columns: []Column{
+			{
+				Name: "column_0",
+				Type: types.Int,
+			},
+			{
+				Name: "column_1",
 				Type: types.String,
 			},
 		},
