@@ -2,56 +2,33 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"parallel/dataframe"
-	"parallel/types"
 )
 
 func main() {
 
 	raw_values := [][]interface{}{
-		{2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a"},
-		{2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a"},
-		{2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a"},
-		{math.NaN(), "2022-06-01 19:58:30.991242+00", "b", true, 2.2, math.NaN(), "a"},
+		{1, 2, false, "a", 5, true},
+		{1, 2, false, "b"},
+		{1, 2, false, "c"},
+		{2, 2, false, "a"},
+		{2, 2, true},
+		{2, 2, false, "c"},
+		{3, 2, false, "zzzz"},
+		{3, 2, false, 5, 5, 5.5, true},
+		{4, true, true},
 	}
 
-	schema := dataframe.Schema{
-		Columns: []dataframe.Column{
-			{
-				Type: types.Float,
-				Name: "a",
-			},
-			{
-				Type: types.String,
-				Name: "b",
-			},
-			{
-				Type: types.String,
-				Name: "c",
-			},
-			{
-				Type: types.Bool,
-				Name: "d",
-			},
-			{
-				Type: types.Float,
-				Name: "e",
-			},
-			{
-				Type: types.Int,
-				Name: "f",
-			},
-			{
-				Type: types.String,
-				Name: "g",
-			},
-		},
+	df := dataframe.CreateDataframe(raw_values)
+
+	gb := df.GroupBy("column_0", "column_1")
+
+	for k := range gb.Groups {
+
+		fmt.Println(*k)
+		gbDf := gb.Groups[k]
+		gbDf.Print()
+
 	}
-	df := dataframe.CreateDataframe(raw_values, schema)
-
-	df.Print()
-
-	fmt.Println(df.ColumnTypes())
 
 }

@@ -21,6 +21,15 @@ func (s1 *Schema) Equals(s2 Schema) bool {
 	return true
 }
 
+func (s *Schema) ColumnIndexInSchema(columnName string) int {
+	for idx, c := range s.Columns {
+		if c.Name == columnName {
+			return idx
+		}
+	}
+	return -1
+}
+
 func evalSchemaForRow(r Row, s Schema) bool {
 
 	if len(s.Columns) != len(r.Values) {
