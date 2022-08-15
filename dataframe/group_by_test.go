@@ -6,7 +6,7 @@ import (
 
 func TestGroupBy(t *testing.T) {
 
-	raw_values := [][]interface{}{
+	rawValues := [][]interface{}{
 		{1, 2, false, "a", 5, true},
 		{1, 2, false, "b"},
 		{1, 2, false, "c"},
@@ -18,7 +18,7 @@ func TestGroupBy(t *testing.T) {
 		{4, 2, true},
 	}
 
-	df := CreateDataframe(raw_values)
+	df := CreateDataframe(rawValues)
 	gb := df.GroupBy("column_0", "column_1")
 
 	expectedGroupKeys := make(map[string]GroupKey)

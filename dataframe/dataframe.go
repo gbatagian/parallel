@@ -37,11 +37,11 @@ func (df *Dataframe) IsEmpty() bool {
 		/* This is the case when df is created from an empty slice of values,
 		e.g.
 
-		raw_values := [][]interface{}{
+		rawValues := [][]interface{}{
 		 	{},
 		}
 
-		df := dataframe.CreateDataframe(raw_values)
+		df := dataframe.CreateDataframe(rawValues)
 		*/
 		return true
 	}
@@ -71,10 +71,10 @@ func (df *Dataframe) ColumnTypes() []types.DataType {
 
 func (df *Dataframe) updateDataframeSchema(r Row) {
 
-	df_schema_len := len(df.Schema.Columns)
-	row_schema_len := len(r.Schema.Columns)
+	dfSchemaLen := len(df.Schema.Columns)
+	rowSchemaLen := len(r.Schema.Columns)
 
-	if df_schema_len < row_schema_len {
+	if dfSchemaLen < rowSchemaLen {
 		// row has a larger schema (more values than the df columnd)
 		df.updateDfSchemaFromRowWithmLargerSchema(r)
 	} else {
@@ -98,29 +98,29 @@ func (df *Dataframe) updateColumnsTypesBasedOnSchema(s Schema) {
 func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r Row) {
 
 	// Extend df schema with the extra columns present in row
-	df_schema_len := len(df.Schema.Columns)
-	df.Schema.Columns = append(df.Schema.Columns, r.Schema.Columns[df_schema_len:]...)
-	var dummy_values []interface{}
+	dfSchemaLen := len(df.Schema.Columns)
+	df.Schema.Columns = append(df.Schema.Columns, r.Schema.Columns[dfSchemaLen:]...)
+	var dummyValues []interface{}
 
 	// Create dummy values to populate the extra columns on the previous rows
-	for idx, c := range r.Schema.Columns[df_schema_len:] {
-		dfColumnIdx := idx + df_schema_len
+	for idx, c := range r.Schema.Columns[dfSchemaLen:] {
+		dfColumnIdx := idx + dfSchemaLen
 
 		if types.IsType(c.Type, types.Int) {
-			dummy_values = append(dummy_values, math.NaN())
+			dummyValues = append(dummyValues, math.NaN())
 		} else if types.IsType(c.Type, types.Float) {
-			dummy_values = append(dummy_values, math.NaN())
+			dummyValues = append(dummyValues, math.NaN())
 		} else if types.IsType(c.Type, types.String) {
-			dummy_values = append(dummy_values, "")
+			dummyValues = append(dummyValues, "")
 		} else if types.IsType(c.Type, types.Bool) {
-			dummy_values = append(dummy_values, "")
+			dummyValues = append(dummyValues, "")
 			df.Schema.Columns[dfColumnIdx].Type = types.String // because "" was used as dummy value for the missing bool value
 		}
 	}
 
 	// Populate previous rows with dummy values
 	for idx, r := range df.Rows[:len(df.Rows)-1] {
-		df.Rows[idx].Values = append(r.Values, dummy_values...)
+		df.Rows[idx].Values = append(r.Values, dummyValues...)
 	}
 
 }
@@ -128,27 +128,27 @@ func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r Row) {
 func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r *Row) {
 
 	// Add dummy values to the row in order to complu with the df larger schema
-	row_len := len(r.Schema.Columns)
-	var dummy_values []interface{}
+	rowLen := len(r.Schema.Columns)
+	var dummyValues []interface{}
 
-	for _, c := range df.Schema.Columns[row_len:] {
+	for _, c := range df.Schema.Columns[rowLen:] {
 
 		if types.IsType(c.Type, types.Int) {
-			dummy_values = append(dummy_values, math.NaN())
+			dummyValues = append(dummyValues, math.NaN())
 			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.Int})
 		} else if types.IsType(c.Type, types.Float) {
-			dummy_values = append(dummy_values, math.NaN())
+			dummyValues = append(dummyValues, math.NaN())
 			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.Float})
 		} else if types.IsType(c.Type, types.String) {
-			dummy_values = append(dummy_values, "")
+			dummyValues = append(dummyValues, "")
 			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.String})
 		} else if types.IsType(c.Type, types.Bool) {
-			dummy_values = append(dummy_values, "")
+			dummyValues = append(dummyValues, "")
 			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.String}) // because "" was used as dummy value for the missing bool value
 		}
 	}
 
-	df.Rows[len(df.Rows)-1].Values = append(df.Rows[len(df.Rows)-1].Values, dummy_values...)
+	df.Rows[len(df.Rows)-1].Values = append(df.Rows[len(df.Rows)-1].Values, dummyValues...)
 
 }
 
@@ -286,8 +286,8 @@ func CreateDataframe(rows [][]interface{}, i ...interface{}) Dataframe {
 	input := i[0] // Variadic was used to make i optional, when not missing always evaluated in the 0 index.
 
 	// Case 2: The provided info is the column names.
-	if column_names, ok := input.([]string); ok {
-		return createDataframeWithColumnNames(rows, column_names)
+	if columnNames, ok := input.([]string); ok {
+		return createDataframeWithColumnNames(rows, columnNames)
 	}
 
 	// Case 3: Schema was provided

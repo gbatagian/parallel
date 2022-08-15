@@ -64,14 +64,14 @@ func (df *Dataframe) Print(n ...int) {
 	printLines = append(printLines, columnNamesLineStr[:len(columnNamesLineStr)-1])
 	printLines = append(printLines, columnTypesLineStr[:len(columnTypesLineStr)-1])
 
-	for r_idx, row := range rowLines {
-		for v_idx, value := range row {
-			v_s, _ := value.(string)
-			rowLines[r_idx][v_idx] = leftAlighn(v_s, maxCharsPerColumn[v_idx])
+	for rIdx, row := range rowLines {
+		for vIdx, value := range row {
+			vStr, _ := value.(string)
+			rowLines[rIdx][vIdx] = leftAlighn(vStr, maxCharsPerColumn[vIdx])
 		}
 
 		dashesLineStr := fmt.Sprintf(strings.Repeat("-%v-+", len(dashes)), dashes...)
-		rowLineStr := fmt.Sprintf(strings.Repeat(" %v |", len(rowLines[r_idx])), rowLines[r_idx]...)
+		rowLineStr := fmt.Sprintf(strings.Repeat(" %v |", len(rowLines[rIdx])), rowLines[rIdx]...)
 		printLines = append(printLines, dashesLineStr[:len(dashesLineStr)-1])
 		printLines = append(printLines, rowLineStr[:len(rowLineStr)-1])
 	}

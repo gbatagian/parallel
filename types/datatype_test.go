@@ -68,9 +68,9 @@ func TestDataTypeNaNIsFloat(t *testing.T) {
 
 func TestDataTypeEvaluationForDataType(t *testing.T) {
 
-	data_Types := []DataType{Int, Float, String, Bool}
+	dataTypes := []DataType{Int, Float, String, Bool}
 
-	for _, tp := range data_Types {
+	for _, tp := range dataTypes {
 
 		if !IsType(tp, tp) {
 			msg := fmt.Sprintf("Failed to evaluate %v DataType", tp)

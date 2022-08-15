@@ -19,11 +19,11 @@ func TestRowCreationWithSchema(t *testing.T) {
 			},
 		},
 	}
-	raw_data := []interface{}{"A", 1}
+	rawData := []interface{}{"A", 1}
 
-	row := CreateRow(raw_data, schema)
+	row := CreateRow(rawData, schema)
 
-	if !row.Equals(Row{Values: raw_data, Schema: schema}) {
+	if !row.Equals(Row{Values: rawData, Schema: schema}) {
 		t.Error("Rows should be equal.")
 	}
 }
