@@ -12,12 +12,42 @@ type Dataframe struct {
 }
 
 func (df1 *Dataframe) Equals(df2 Dataframe) bool {
+	if df1.IsEmpty() && df2.IsEmpty() {
+		return true
+	}
+	if !df1.Schema.Equals(df2.Schema) {
+		return false
+	}
 	for idx, r := range df1.Rows {
-		if !r.Equals(df2.Rows[idx]) {
+		if !r.EqualValues(df2.Rows[idx]) {
 			return false
 		}
 	}
 	return true
+}
+
+func (df *Dataframe) IsEmpty() bool {
+
+	if df.Schema.Equals(Schema{}) && len(df.Rows) == 0 {
+		// This is the case: df = Dataframe{}
+		return true
+	}
+
+	if df.Schema.Equals(Schema{}) && len(df.Rows) == 1 && df.Rows[0].Equals(Row{}) {
+		/* This is the case when df is created from an empty slice of values,
+		e.g.
+
+		raw_values := [][]interface{}{
+		 	{},
+		}
+
+		df := dataframe.CreateDataframe(raw_values)
+		*/
+		return true
+	}
+
+	return false
+
 }
 
 func (df *Dataframe) ColumnNames() []string {

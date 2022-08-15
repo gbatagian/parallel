@@ -1,7 +1,6 @@
 package dataframe
 
 import (
-	"fmt"
 	"math"
 	"parallel/types"
 	"testing"
@@ -26,10 +25,6 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 
 	df = CreateDataframe(raw_values)
 
-	for _, c := range df.Schema.Columns {
-		fmt.Println(c.Name)
-		fmt.Println(c.Type)
-	}
 	expected_df_schema = Schema{
 		Columns: []Column{
 			{

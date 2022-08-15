@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"fmt"
+	"math"
 	"parallel/types"
 )
 
@@ -17,6 +18,23 @@ func (r1 *Row) Equals(r2 Row) bool {
 	for idx, v := range r1.Values {
 		if v != r2.Values[idx] {
 			return false
+		}
+	}
+	return true
+}
+
+func (r1 *Row) EqualValues(r2 Row) bool {
+	if len(r1.Values) != len(r2.Values) {
+		return false
+	}
+	for idx, v1 := range r1.Values {
+		v2 := r2.Values[idx]
+		if v1 != v2 {
+			v1, _ := v1.(float64)
+			v2, _ := v2.(float64)
+			if !(math.IsNaN(v1) && math.IsNaN(v2)) {
+				return false
+			}
 		}
 	}
 	return true
