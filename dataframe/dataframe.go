@@ -69,6 +69,59 @@ func (df *Dataframe) ColumnTypes() []types.DataType {
 	return t
 }
 
+func (df *Dataframe) Shape() [2]int {
+	return [2]int{
+		len(df.Rows),
+		len(df.Schema.Columns),
+	}
+}
+
+func (df *Dataframe) RSlice(sIdx int, eIdx int) Dataframe {
+
+	nDfRows := len(df.Rows)
+	if eIdx > nDfRows {
+		eIdx = nDfRows
+	}
+
+	if sIdx > eIdx {
+		panic(fmt.Sprintf("Invadid dataframe slice indexes, start: %d, end: %d", sIdx, eIdx))
+	}
+
+	if sIdx == eIdx {
+		return Dataframe{}
+	}
+
+	newDf := Dataframe{}
+	newDf.Rows = df.Rows[sIdx:eIdx]
+	newDf.Schema = df.Schema
+
+	return newDf
+}
+
+func (df *Dataframe) CSlice(sIdx int, eIdx int) Dataframe {
+
+	nDfColumns := len(df.Schema.Columns)
+	if eIdx > nDfColumns {
+		eIdx = nDfColumns
+	}
+
+	if sIdx > eIdx {
+		panic(fmt.Sprintf("Invadid dataframe slice indexes, start: %d, end: %d", sIdx, eIdx))
+	}
+
+	if sIdx == eIdx {
+		return Dataframe{}
+	}
+
+	newDf := Dataframe{}
+	newDf.Schema.Columns = df.Schema.Columns[sIdx:eIdx]
+	for _, r := range df.Rows {
+		newDf.Rows = append(newDf.Rows, r.Slice(sIdx, eIdx))
+	}
+
+	return newDf
+}
+
 func (df *Dataframe) updateDataframeSchema(r Row) {
 
 	dfSchemaLen := len(df.Schema.Columns)
@@ -121,6 +174,7 @@ func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r Row) {
 	// Populate previous rows with dummy values
 	for idx, r := range df.Rows[:len(df.Rows)-1] {
 		df.Rows[idx].Values = append(r.Values, dummyValues...)
+		df.Rows[idx].Schema = df.Schema
 	}
 
 }
@@ -149,6 +203,7 @@ func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r *Row) {
 	}
 
 	df.Rows[len(df.Rows)-1].Values = append(df.Rows[len(df.Rows)-1].Values, dummyValues...)
+	df.Rows[len(df.Rows)-1].Schema = df.Schema
 
 }
 
@@ -216,6 +271,7 @@ func (df *Dataframe) updateValuesFormatInPosition(idx int, f types.DataType) {
 			}
 		}
 	}
+
 }
 
 func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {

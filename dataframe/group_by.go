@@ -24,7 +24,7 @@ type GroupBy struct {
 	Groups map[*GroupKey]Dataframe
 }
 
-func (g *GroupBy) groupExists(gk GroupKey) (bool, *GroupKey) {
+func (g *GroupBy) GroupExists(gk GroupKey) (bool, *GroupKey) {
 
 	for k := range g.Groups {
 		key := *k
@@ -53,7 +53,7 @@ func (df *Dataframe) GroupBy(columnNames ...string) GroupBy {
 		}
 
 		gk := GroupKey{key}
-		gkExists, gkPointer := g.groupExists(gk)
+		gkExists, gkPointer := g.GroupExists(gk)
 
 		if !gkExists {
 			g.Groups[&gk] = CreateDataframe([][]interface{}{row.Values}, df.Schema)

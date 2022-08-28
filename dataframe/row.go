@@ -40,6 +40,29 @@ func (r1 *Row) EqualValues(r2 Row) bool {
 	return true
 }
 
+func (r *Row) Slice(sIdx int, eIdx int) Row {
+
+	nVal := len(r.Values)
+	if eIdx > nVal {
+		eIdx = nVal
+	}
+
+	if sIdx > eIdx {
+		panic(fmt.Sprintf("Invadid row slice indexes, start: %d, end: %d", sIdx, eIdx))
+	}
+
+	if sIdx == eIdx {
+		return Row{}
+	}
+
+	newRow := Row{}
+	newRow.Schema.Columns = r.Schema.Columns[sIdx:eIdx]
+	newRow.Values = r.Values[sIdx:eIdx]
+
+	return newRow
+
+}
+
 func (r *Row) createSchema() Schema {
 
 	var s Schema
