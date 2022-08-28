@@ -1,6 +1,7 @@
 package dataframe
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -49,6 +50,8 @@ func TestGroupBy(t *testing.T) {
 
 		expectedGroupDf := expectedGroupDfs[k.Hash()]
 		if !gdf.Equals(expectedGroupDf) {
+			fmt.Println(k)
+			gdf.Print()
 			t.Error("Unexcpected group dataframe.")
 		}
 	}

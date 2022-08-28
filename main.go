@@ -11,12 +11,12 @@ func main() {
 		{1, 2, false, "a", 5, true},
 		{1, 2, false, "b"},
 		{1, 2, false, "c"},
-		{2, 2, false, "a"},
+		{2, 2, false, "d"},
 		{2, 2, true},
-		{2, 2, false, "c"},
-		{3, 2, false, "zzzz"},
+		{2, 2, false, "e"},
+		{3, 2, false, "f"},
 		{3, 2, false, 5, 5, 5.5, true},
-		{4, true, true},
+		{4, 2, true},
 	}
 
 	df := dataframe.CreateDataframe(raw_values)
