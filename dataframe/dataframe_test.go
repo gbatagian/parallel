@@ -2,6 +2,8 @@ package dataframe
 
 import (
 	"math"
+	"parallel/column"
+	"parallel/schema"
 	"parallel/types"
 	"testing"
 )
@@ -10,7 +12,7 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 
 	var rawValues [][]interface{}
 	var df Dataframe
-	var expectedDfSchema Schema
+	var expectedDfSchema schema.Schema
 
 	// Case 1: mix
 	rawValues = [][]interface{}{
@@ -25,8 +27,8 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 
 	df = CreateDataframe(rawValues)
 
-	expectedDfSchema = Schema{
-		Columns: []Column{
+	expectedDfSchema = schema.Schema{
+		Columns: []column.Column{
 			{
 				Name: "column_0",
 				Type: types.Int,
@@ -78,8 +80,8 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 
 	df = CreateDataframe(rawValues)
 
-	expectedDfSchema = Schema{
-		Columns: []Column{
+	expectedDfSchema = schema.Schema{
+		Columns: []column.Column{
 			{
 				Name: "column_0",
 				Type: types.Int,
@@ -103,8 +105,8 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 
 	df = CreateDataframe(rawValues)
 
-	expectedDfSchema = Schema{
-		Columns: []Column{
+	expectedDfSchema = schema.Schema{
+		Columns: []column.Column{
 			{
 				Name: "column_0",
 				Type: types.Int,
@@ -133,8 +135,8 @@ func TestDataframeCreationWithColumnNames(t *testing.T) {
 
 	df := CreateDataframe(rawValues, []string{"a", "b", "c", "d", "e", "f", "g", "h"})
 
-	expectedDfSchema := Schema{
-		Columns: []Column{
+	expectedDfSchema := schema.Schema{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.String,
@@ -185,8 +187,8 @@ func TestDataframeCreationWithSchema(t *testing.T) {
 		{math.NaN(), "2022-06-01 19:58:30.991242+00", "b", true, 2.2, math.NaN(), "a"},
 	}
 
-	schema := Schema{
-		Columns: []Column{
+	schema := schema.Schema{
+		Columns: []column.Column{
 			{
 				Type: types.Float,
 				Name: "a",
@@ -226,8 +228,8 @@ func TestDataframeCreationWithSchema(t *testing.T) {
 
 func TestDataframeColumnNames(t *testing.T) {
 
-	schema := Schema{
-		Columns: []Column{
+	schema := schema.Schema{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.Int,
@@ -260,8 +262,8 @@ func TestDataframeColumnNames(t *testing.T) {
 
 func TestDataframeColumnTypes(t *testing.T) {
 
-	schema := Schema{
-		Columns: []Column{
+	schema := schema.Schema{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.Int,

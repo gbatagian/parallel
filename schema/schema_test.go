@@ -1,6 +1,8 @@
-package dataframe
+package schema
 
 import (
+	"parallel/column"
+	// "parallel/row"
 	"parallel/types"
 	"testing"
 )
@@ -8,7 +10,7 @@ import (
 func TestSchemaEquality(t *testing.T) {
 
 	s1 := Schema{
-		Columns: []Column{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.Int,
@@ -21,7 +23,7 @@ func TestSchemaEquality(t *testing.T) {
 	}
 
 	s2 := Schema{
-		Columns: []Column{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.Int,
@@ -41,7 +43,7 @@ func TestSchemaEquality(t *testing.T) {
 func TestSchemaNotEqualType(t *testing.T) {
 
 	s1 := Schema{
-		Columns: []Column{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.Int,
@@ -54,7 +56,7 @@ func TestSchemaNotEqualType(t *testing.T) {
 	}
 
 	s2 := Schema{
-		Columns: []Column{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.Int,
@@ -74,7 +76,7 @@ func TestSchemaNotEqualType(t *testing.T) {
 func TestSchemaNotEqualName(t *testing.T) {
 
 	s1 := Schema{
-		Columns: []Column{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.Int,
@@ -87,7 +89,7 @@ func TestSchemaNotEqualName(t *testing.T) {
 	}
 
 	s2 := Schema{
-		Columns: []Column{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.Int,
@@ -109,7 +111,7 @@ func TestSchemaForRawData(t *testing.T) {
 	values := []interface{}{1, 1.1, "a", true}
 
 	schema := Schema{
-		Columns: []Column{
+		Columns: []column.Column{
 			{
 				Name: "a",
 				Type: types.Int,
@@ -129,43 +131,8 @@ func TestSchemaForRawData(t *testing.T) {
 		},
 	}
 
-	if !SchemaOK(values, schema) {
+	if !SchemaOKForRawData(values, schema) {
 		t.Error("Value should comply with the schema.")
-	}
-
-}
-
-func TestSchemaForRow(t *testing.T) {
-
-	values := []interface{}{1, 1.1, "a", true}
-	schema := Schema{
-		Columns: []Column{
-			{
-				Name: "a",
-				Type: types.Int,
-			},
-			{
-				Name: "b",
-				Type: types.Float,
-			},
-			{
-				Name: "c",
-				Type: types.String,
-			},
-			{
-				Name: "d",
-				Type: types.Bool,
-			},
-		},
-	}
-
-	row := Row{
-		Values: values,
-		Schema: schema,
-	}
-
-	if !SchemaOK(row, schema) {
-		t.Error("Row should comply with the schema.")
 	}
 
 }

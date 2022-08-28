@@ -3,12 +3,15 @@ package dataframe
 import (
 	"fmt"
 	"math"
+	"parallel/column"
+	"parallel/row"
+	"parallel/schema"
 	"parallel/types"
 )
 
 type Dataframe struct {
-	Rows   []Row
-	Schema Schema
+	Rows   []row.Row
+	Schema schema.Schema
 }
 
 func (df1 *Dataframe) Equals(df2 Dataframe) bool {
@@ -28,12 +31,12 @@ func (df1 *Dataframe) Equals(df2 Dataframe) bool {
 
 func (df *Dataframe) IsEmpty() bool {
 
-	if df.Schema.Equals(Schema{}) && len(df.Rows) == 0 {
+	if df.Schema.Equals(schema.Schema{}) && len(df.Rows) == 0 {
 		// This is the case: df = Dataframe{}
 		return true
 	}
 
-	if df.Schema.Equals(Schema{}) && len(df.Rows) == 1 && df.Rows[0].Equals(Row{}) {
+	if df.Schema.Equals(schema.Schema{}) && len(df.Rows) == 1 && df.Rows[0].Equals(row.Row{}) {
 		/* This is the case when df is created from an empty slice of values,
 		e.g.
 
@@ -122,7 +125,7 @@ func (df *Dataframe) CSlice(sIdx int, eIdx int) Dataframe {
 	return newDf
 }
 
-func (df *Dataframe) updateDataframeSchema(r Row) {
+func (df *Dataframe) updateDataframeSchema(r row.Row) {
 
 	dfSchemaLen := len(df.Schema.Columns)
 	rowSchemaLen := len(r.Schema.Columns)
@@ -140,7 +143,7 @@ func (df *Dataframe) updateDataframeSchema(r Row) {
 
 }
 
-func (df *Dataframe) updateColumnsTypesBasedOnSchema(s Schema) {
+func (df *Dataframe) updateColumnsTypesBasedOnSchema(s schema.Schema) {
 	for idx, c := range s.Columns {
 		if !(types.IsType(df.Schema.Columns[idx].Type, c.Type)) {
 			df.updateColumnTypeInPosition(idx, c.Type)
@@ -148,7 +151,7 @@ func (df *Dataframe) updateColumnsTypesBasedOnSchema(s Schema) {
 	}
 }
 
-func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r Row) {
+func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r row.Row) {
 
 	// Extend df schema with the extra columns present in row
 	dfSchemaLen := len(df.Schema.Columns)
@@ -179,7 +182,7 @@ func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r Row) {
 
 }
 
-func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r *Row) {
+func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r *row.Row) {
 
 	// Add dummy values to the row in order to complu with the df larger schema
 	rowLen := len(r.Schema.Columns)
@@ -189,16 +192,16 @@ func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r *Row) {
 
 		if types.IsType(c.Type, types.Int) {
 			dummyValues = append(dummyValues, math.NaN())
-			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.Int})
+			r.Schema.Columns = append(r.Schema.Columns, column.Column{Name: "", Type: types.Int})
 		} else if types.IsType(c.Type, types.Float) {
 			dummyValues = append(dummyValues, math.NaN())
-			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.Float})
+			r.Schema.Columns = append(r.Schema.Columns, column.Column{Name: "", Type: types.Float})
 		} else if types.IsType(c.Type, types.String) {
 			dummyValues = append(dummyValues, "")
-			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.String})
+			r.Schema.Columns = append(r.Schema.Columns, column.Column{Name: "", Type: types.String})
 		} else if types.IsType(c.Type, types.Bool) {
 			dummyValues = append(dummyValues, "")
-			r.Schema.Columns = append(r.Schema.Columns, Column{Name: "", Type: types.String}) // because "" was used as dummy value for the missing bool value
+			r.Schema.Columns = append(r.Schema.Columns, column.Column{Name: "", Type: types.String}) // because "" was used as dummy value for the missing bool value
 		}
 	}
 
@@ -274,13 +277,28 @@ func (df *Dataframe) updateValuesFormatInPosition(idx int, f types.DataType) {
 
 }
 
+func SchemaOK(i interface{}, s schema.Schema) bool {
+
+	// Evaluate schema for Row struct
+	if r, ok := i.(row.Row); ok {
+		return r.SchemaOK(s)
+	}
+
+	// Evaluate schema for raw data
+	if d, ok := i.([]interface{}); ok {
+		return schema.SchemaOKForRawData(d, s)
+	}
+
+	return false
+}
+
 func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {
 
 	df := Dataframe{}
 
 	for _, r := range rows {
 
-		row := CreateRow(r)
+		row := row.CreateRow(r)
 		schema := row.Schema
 		df.Rows = append(df.Rows, row)
 
@@ -303,7 +321,7 @@ func createDataframeWithColumnNames(rows [][]interface{}, c []string) Dataframe 
 	df := Dataframe{}
 
 	for _, r := range rows {
-		row := CreateRow(r, c)
+		row := row.CreateRow(r, c)
 		schema := row.Schema
 		df.Rows = append(df.Rows, row)
 		if len(df.Schema.Columns) == 0 {
@@ -319,13 +337,13 @@ func createDataframeWithColumnNames(rows [][]interface{}, c []string) Dataframe 
 
 }
 
-func createDataframeWithSchema(rows [][]interface{}, s Schema) Dataframe {
+func createDataframeWithSchema(rows [][]interface{}, s schema.Schema) Dataframe {
 
 	df := Dataframe{}
 	df.Schema = s
 
 	for _, r := range rows {
-		row := CreateRow(r, s)
+		row := row.CreateRow(r, s)
 		df.Rows = append(df.Rows, row)
 	}
 
@@ -347,5 +365,5 @@ func CreateDataframe(rows [][]interface{}, i ...interface{}) Dataframe {
 	}
 
 	// Case 3: Schema was provided
-	return createDataframeWithSchema(rows, input.(Schema))
+	return createDataframeWithSchema(rows, input.(schema.Schema))
 }

@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"fmt"
+	"parallel/row"
 	"testing"
 )
 
@@ -39,7 +40,7 @@ func TestGroupBy(t *testing.T) {
 
 	gk = GroupKey{[]interface{}{4, 2}}
 	expectedGroupKeys[gk.Hash()] = gk
-	expectedGroupDfs[gk.Hash()] = Dataframe{[]Row{df.Rows[8]}, df.Schema}
+	expectedGroupDfs[gk.Hash()] = Dataframe{[]row.Row{df.Rows[8]}, df.Schema}
 
 	for k, gdf := range gb.Groups {
 

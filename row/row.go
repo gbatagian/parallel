@@ -1,14 +1,16 @@
-package dataframe
+package row
 
 import (
 	"fmt"
 	"math"
+	"parallel/column"
+	"parallel/schema"
 	"parallel/types"
 )
 
 type Row struct {
 	Values []interface{}
-	Schema Schema
+	Schema schema.Schema
 }
 
 func (r1 *Row) Equals(r2 Row) bool {
@@ -40,6 +42,22 @@ func (r1 *Row) EqualValues(r2 Row) bool {
 	return true
 }
 
+func (r *Row) SchemaOK(s schema.Schema) bool {
+
+	if len(s.Columns) != len(r.Values) {
+		return false
+	}
+
+	for idx, value := range r.Values {
+		if !(types.IsType(value, s.Columns[idx].Type)) {
+			return false
+		}
+	}
+
+	return true
+
+}
+
 func (r *Row) Slice(sIdx int, eIdx int) Row {
 
 	nVal := len(r.Values)
@@ -63,20 +81,20 @@ func (r *Row) Slice(sIdx int, eIdx int) Row {
 
 }
 
-func (r *Row) createSchema() Schema {
+func (r *Row) createSchema() schema.Schema {
 
-	var s Schema
+	var s schema.Schema
 
 	for i, v := range r.Values {
 		switch v.(type) {
 		case int, int8, int16, int32, int64:
-			s.Columns = append(s.Columns, Column{fmt.Sprintf("column_%d", i), types.Int})
+			s.Columns = append(s.Columns, column.Column{Name: fmt.Sprintf("column_%d", i), Type: types.Int})
 		case float32, float64:
-			s.Columns = append(s.Columns, Column{fmt.Sprintf("column_%d", i), types.Float})
+			s.Columns = append(s.Columns, column.Column{Name: fmt.Sprintf("column_%d", i), Type: types.Float})
 		case bool:
-			s.Columns = append(s.Columns, Column{fmt.Sprintf("column_%d", i), types.Bool})
+			s.Columns = append(s.Columns, column.Column{Name: fmt.Sprintf("column_%d", i), Type: types.Bool})
 		case string:
-			s.Columns = append(s.Columns, Column{fmt.Sprintf("column_%d", i), types.String})
+			s.Columns = append(s.Columns, column.Column{Name: fmt.Sprintf("column_%d", i), Type: types.String})
 		}
 
 	}
@@ -84,20 +102,20 @@ func (r *Row) createSchema() Schema {
 	return s
 }
 
-func (r *Row) createSchemaWithColumnNames(c []string) Schema {
+func (r *Row) createSchemaWithColumnNames(c []string) schema.Schema {
 
-	var s Schema
+	var s schema.Schema
 
 	for i, v := range r.Values {
 		switch v.(type) {
 		case int, int8, int16, int32, int64:
-			s.Columns = append(s.Columns, Column{c[i], types.Int})
+			s.Columns = append(s.Columns, column.Column{Name: c[i], Type: types.Int})
 		case float32, float64:
-			s.Columns = append(s.Columns, Column{c[i], types.Float})
+			s.Columns = append(s.Columns, column.Column{Name: c[i], Type: types.Float})
 		case bool:
-			s.Columns = append(s.Columns, Column{c[i], types.Bool})
+			s.Columns = append(s.Columns, column.Column{Name: c[i], Type: types.Bool})
 		case string:
-			s.Columns = append(s.Columns, Column{c[i], types.String})
+			s.Columns = append(s.Columns, column.Column{Name: c[i], Type: types.String})
 		}
 
 	}
@@ -131,7 +149,7 @@ func createRowWithColumnNames(v []interface{}, c []string) Row {
 	return r
 }
 
-func createRowWithSchema(v []interface{}, s Schema) Row {
+func createRowWithSchema(v []interface{}, s schema.Schema) Row {
 
 	if len(s.Columns) != len(v) {
 		msg := fmt.Sprintf(
@@ -173,6 +191,6 @@ func CreateRow(v []interface{}, i ...interface{}) Row {
 	}
 
 	// Case 3: Schema was provided in row definition.
-	return createRowWithSchema(v, input.(Schema))
+	return createRowWithSchema(v, input.(schema.Schema))
 
 }
