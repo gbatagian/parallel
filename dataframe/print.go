@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -24,7 +25,7 @@ func (df *Dataframe) Print(n ...int) {
 
 	maxCharsPerColumn := make(map[int]int)
 
-	// Create data to built for Column and Column Types Lines
+	// Create data to built the Column and Column Types Lines
 	var columnNames []interface{}
 	var columnTypes []interface{}
 
@@ -33,7 +34,7 @@ func (df *Dataframe) Print(n ...int) {
 		columnTypes = append(columnTypes, fmt.Sprintf("(%s)", c.Type))
 		n, _ := columnNames[idx].(string)
 		t, _ := columnTypes[idx].(string)
-		maxCharsPerColumn[idx] = maxInt(len(n), len(t))
+		maxCharsPerColumn[idx] = int(math.Max(float64(len(n)), float64(len(t))))
 	}
 
 	// Create data to built the Row lines
@@ -43,7 +44,7 @@ func (df *Dataframe) Print(n ...int) {
 		for idx, v := range r.Values {
 			stringValue := fmt.Sprintf("%v", v)
 			rowStringValues = append(rowStringValues, stringValue)
-			maxCharsPerColumn[idx] = maxInt(maxCharsPerColumn[idx], len(stringValue))
+			maxCharsPerColumn[idx] = int(math.Max(float64(maxCharsPerColumn[idx]), float64(len(stringValue))))
 		}
 		rowLines = append(rowLines, rowStringValues)
 	}
@@ -81,13 +82,6 @@ func (df *Dataframe) Print(n ...int) {
 		fmt.Println(l)
 	}
 
-}
-
-func maxInt(int1, int2 int) int {
-	if int1 > int2 {
-		return int1
-	}
-	return int2
 }
 
 func centerAlighn(text string, outputLength int) string {

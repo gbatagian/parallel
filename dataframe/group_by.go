@@ -1,31 +1,14 @@
 package dataframe
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"fmt"
 	"parallel/core"
 )
 
-type GroupKey struct {
-	Key []interface{}
-}
-
-func (k *GroupKey) Hash() string {
-	var buffer bytes.Buffer
-	for _, v := range k.Key {
-		s := fmt.Sprintf("%v", v)
-		buffer.WriteString(s)
-	}
-
-	return fmt.Sprintf("%x", sha256.Sum256(buffer.Bytes()))
-}
-
 type GroupBy struct {
-	Groups map[*GroupKey]Dataframe
+	Groups map[*core.ValuesKey]Dataframe
 }
 
-func (g *GroupBy) GroupExists(gk GroupKey) (bool, *GroupKey) {
+func (g *GroupBy) GroupExists(gk core.ValuesKey) (bool, *core.ValuesKey) {
 
 	for k := range g.Groups {
 		key := *k
@@ -67,16 +50,16 @@ func (df *Dataframe) groupByOperation(columnNames ...string) GroupBy {
 		columnIndexes[idx] = df.Schema.ColumnIndexInSchema(name)
 	}
 
-	g := GroupBy{Groups: make(map[*GroupKey]Dataframe)}
+	g := GroupBy{Groups: make(map[*core.ValuesKey]Dataframe)}
 
 	for _, row := range df.Rows {
 
-		var key []interface{}
+		var v []interface{}
 		for _, cIdx := range columnIndexes {
-			key = append(key, row.Values[cIdx])
+			v = append(v, row.Values[cIdx])
 		}
 
-		gk := GroupKey{key}
+		gk := core.ValuesKey{Values: v}
 		gkExists, gkPointer := g.GroupExists(gk)
 
 		if !gkExists {
