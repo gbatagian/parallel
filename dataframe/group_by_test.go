@@ -51,6 +51,8 @@ func TestGroupBy(t *testing.T) {
 		}
 
 		expectedGroupDf := expectedGroupDfs[k.Hash()]
+		expectedGroupDf = expectedGroupDf.Sort("column_3")
+		gdf = gdf.Sort("column_3")
 		if !gdf.Equals(expectedGroupDf) {
 			fmt.Println(k)
 			gdf.Print()

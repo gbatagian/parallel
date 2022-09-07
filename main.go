@@ -1,17 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"parallel/dataframe"
 )
 
 func main() {
 
-	raw_values := [][]interface{}{}
+	raw_values := [][]interface{}{
+		{1, 2, false, "a"},
+		{1, 2, false, "b"},
+		{1, 2, false, "c"},
+		{2, 2, false, "d"},
+		{2, 2, true},
+		{2, 2, false, "e"},
+		{1, 2, false, "f"},
+		{1, 2, false, "g"},
+		{1, 2, true},
+	}
 
-	df := dataframe.CreateDataframe(raw_values)
-	dfs := df.Split(3)
+	d := dataframe.CreateDataframe(raw_values)
 
-	fmt.Println(dfs)
-	fmt.Println(len(dfs))
+	sd := d.Sort("column_0", "~column_2", "column_3")
+
+	sd.Print(100)
 }
