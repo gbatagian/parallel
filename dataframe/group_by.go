@@ -5,10 +5,10 @@ import (
 )
 
 type GroupBy struct {
-	Groups map[*core.ValuesKey]Dataframe
+	Groups map[*core.Key]Dataframe
 }
 
-func (g *GroupBy) GroupExists(gk core.ValuesKey) (bool, *core.ValuesKey) {
+func (g *GroupBy) GroupExists(gk core.Key) (bool, *core.Key) {
 
 	for k := range g.Groups {
 		key := *k
@@ -47,10 +47,10 @@ func (df *Dataframe) groupByOperation(columnNames ...string) GroupBy {
 
 	columnIndexes := make([]int, len(columnNames))
 	for idx, name := range columnNames {
-		columnIndexes[idx] = df.Schema.ColumnIndexInSchema(name)
+		columnIndexes[idx] = df.Schema.ColumnIndex(name)
 	}
 
-	g := GroupBy{Groups: make(map[*core.ValuesKey]Dataframe)}
+	g := GroupBy{Groups: make(map[*core.Key]Dataframe)}
 
 	for _, row := range df.Rows {
 
@@ -59,7 +59,7 @@ func (df *Dataframe) groupByOperation(columnNames ...string) GroupBy {
 			v = append(v, row.Values[cIdx])
 		}
 
-		gk := core.ValuesKey{Values: v}
+		gk := core.Key{Values: v}
 		gkExists, gkPointer := g.GroupExists(gk)
 
 		if !gkExists {

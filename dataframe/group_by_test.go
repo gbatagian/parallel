@@ -24,22 +24,22 @@ func TestGroupBy(t *testing.T) {
 	df := CreateDataframe(rawValues)
 	gb := df.GroupBy("column_0", "column_1")
 
-	expectedGroupKeys := make(map[string]core.ValuesKey)
+	expectedGroupKeys := make(map[string]core.Key)
 	expectedGroupDfs := make(map[string]Dataframe)
 
-	gk := core.ValuesKey{Values: []interface{}{1, 2}}
+	gk := core.Key{Values: []interface{}{1, 2}}
 	expectedGroupKeys[gk.Hash()] = gk
 	expectedGroupDfs[gk.Hash()] = Dataframe{df.Rows[0:3], df.Schema}
 
-	gk = core.ValuesKey{Values: []interface{}{2, 2}}
+	gk = core.Key{Values: []interface{}{2, 2}}
 	expectedGroupKeys[gk.Hash()] = gk
 	expectedGroupDfs[gk.Hash()] = Dataframe{df.Rows[3:6], df.Schema}
 
-	gk = core.ValuesKey{Values: []interface{}{3, 2}}
+	gk = core.Key{Values: []interface{}{3, 2}}
 	expectedGroupKeys[gk.Hash()] = gk
 	expectedGroupDfs[gk.Hash()] = Dataframe{df.Rows[6:8], df.Schema}
 
-	gk = core.ValuesKey{Values: []interface{}{4, 2}}
+	gk = core.Key{Values: []interface{}{4, 2}}
 	expectedGroupKeys[gk.Hash()] = gk
 	expectedGroupDfs[gk.Hash()] = Dataframe{[]row.Row{df.Rows[8]}, df.Schema}
 

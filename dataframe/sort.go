@@ -140,7 +140,7 @@ func (df *Dataframe) Sort(columnNames ...string) Dataframe {
 			sortColumnInReverseOrderMap[idx] = true
 			name = string(name[1:])
 		}
-		columnIndexes[idx] = df.Schema.ColumnIndexInSchema(name)
+		columnIndexes[idx] = df.Schema.ColumnIndex(name)
 
 	}
 

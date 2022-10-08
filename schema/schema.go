@@ -21,7 +21,7 @@ func (s1 *Schema) Equals(s2 Schema) bool {
 	return true
 }
 
-func (s *Schema) ColumnIndexInSchema(columnName string) int {
+func (s *Schema) ColumnIndex(columnName string) int {
 	for idx, c := range s.Columns {
 		if c.Name == columnName {
 			return idx
