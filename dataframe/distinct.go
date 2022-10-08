@@ -6,13 +6,13 @@ import (
 )
 
 type DistictValues struct {
-	ValuesKey map[*core.Key]int
+	ValuesKey []*core.Key
 	Schema    schema.Schema
 }
 
 func (d *DistictValues) ValuesExist(vk core.Key) (bool, *core.Key) {
 
-	for k := range d.ValuesKey {
+	for _, k := range d.ValuesKey {
 		key := *k
 		if vk.Hash() == key.Hash() {
 			return true, k
@@ -25,7 +25,7 @@ func (d *DistictValues) ValuesExist(vk core.Key) (bool, *core.Key) {
 func (d *DistictValues) AsDataframe() Dataframe {
 
 	rows := make([][]interface{}, len(d.ValuesKey))
-	for vk, idx := range d.ValuesKey {
+	for idx, vk := range d.ValuesKey {
 		valuesKey := *vk
 		rows[idx] = valuesKey.Values
 	}
@@ -42,9 +42,8 @@ func (df *Dataframe) Distinct(columnNames ...string) DistictValues {
 		columnsSchema.Columns = append(columnsSchema.Columns, df.Schema.Columns[columnIndexes[idx]])
 	}
 
-	distinctValues := DistictValues{ValuesKey: make(map[*core.Key]int)}
+	distinctValues := DistictValues{}
 
-	i := 0
 	for _, row := range df.Rows {
 
 		var v []interface{}
@@ -55,8 +54,7 @@ func (df *Dataframe) Distinct(columnNames ...string) DistictValues {
 		vk := core.Key{Values: v}
 		vkExists, _ := distinctValues.ValuesExist(vk)
 		if !(vkExists) {
-			distinctValues.ValuesKey[&vk] = i
-			i++
+			distinctValues.ValuesKey = append(distinctValues.ValuesKey, &vk)
 		}
 
 	}
