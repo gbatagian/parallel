@@ -32,9 +32,9 @@ func (gb *GroupBy) Concat(gbStructs ...GroupBy) GroupBy {
 			if !gkExists {
 				gb.Groups[&key] = gbElement.Groups[k]
 			} else {
-				gbFinalGroupDf := gb.Groups[gkPointer]
-				gbFinalGroupDf.Rows = append(gbFinalGroupDf.Rows, gbElement.Groups[k].Rows...)
-				gb.Groups[gkPointer] = gbFinalGroupDf
+				gbGroupDf := gb.Groups[gkPointer]
+				gbGroupDf.Rows = append(gbGroupDf.Rows, gbElement.Groups[k].Rows...)
+				gb.Groups[gkPointer] = gbGroupDf
 			}
 
 		}
@@ -77,7 +77,7 @@ func (df *Dataframe) groupByOperation(columnNames ...string) GroupBy {
 
 func (df *Dataframe) GroupBy(columnNames ...string) GroupBy {
 
-	return groupByPool(*df, columnNames...)
+	return groupByPool(df, columnNames...)
 
 }
 
@@ -94,7 +94,7 @@ func groupByWorker(jobs <-chan groupByJob, results chan<- GroupBy) {
 
 }
 
-func groupByPool(df Dataframe, columnNames ...string) GroupBy {
+func groupByPool(df *Dataframe, columnNames ...string) GroupBy {
 
 	nWorkers := core.NumWorkers
 	dfPackets := df.Split(nWorkers)

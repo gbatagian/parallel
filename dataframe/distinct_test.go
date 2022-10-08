@@ -24,6 +24,7 @@ func TestDistinct(t *testing.T) {
 	df := CreateDataframe(rawValues)
 	distictVal := df.Distinct("column_0", "column_1")
 	distinctDf := distictVal.AsDataframe()
+	distinctDf = distinctDf.Sort("column_0")
 
 	expectedDistinctDf := CreateDataframe(
 		[][]interface{}{
