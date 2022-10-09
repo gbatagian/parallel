@@ -20,7 +20,7 @@ func (g *GroupBy) GroupExists(gk core.Key) (bool, *core.Key) {
 
 }
 
-func (gb *GroupBy) Concat(gbStructs ...GroupBy) GroupBy {
+func (gb *GroupBy) concat(gbStructs ...GroupBy) GroupBy {
 	// Concatenates multiple GroupBy structs into one.
 
 	for _, gbElement := range gbStructs {
@@ -77,7 +77,7 @@ func groupByOperation(df *Dataframe, columnNames ...string) GroupBy {
 
 func (df *Dataframe) GroupBy(columnNames ...string) GroupBy {
 
-	opJ := OperationJob{
+	opJ := ConcurrentOperationCore{
 		df:      df,
 		columns: columnNames,
 		operation: func(df *Dataframe, columnNames ...string) interface{} {
@@ -99,6 +99,6 @@ func (df *Dataframe) GroupBy(columnNames ...string) GroupBy {
 		}
 	}
 
-	return gbPackets[0].Concat(gbPackets[1:]...)
+	return gbPackets[0].concat(gbPackets[1:]...)
 
 }

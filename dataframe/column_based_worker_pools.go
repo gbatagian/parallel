@@ -6,31 +6,30 @@ import (
 
 type operation func(df *Dataframe, columnNames ...string) interface{}
 
-type OperationJob struct {
+type ConcurrentOperationCore struct {
 	df        *Dataframe
 	columns   []string
 	operation operation
 }
 
 type WorkerJob struct {
-	df        Dataframe
-	columns   []string
-	operation operation
+	df  Dataframe
+	cnc *ConcurrentOperationCore
 }
 
 func operationWorker(jobs <-chan WorkerJob, resluts chan<- interface{}) {
 
-	for opJ := range jobs {
-		resluts <- opJ.operation(&opJ.df, opJ.columns...)
+	for job := range jobs {
+		resluts <- job.cnc.operation(&job.df, job.cnc.columns...)
 	}
 
 }
 
-func Pool(opJ OperationJob) []interface{} {
+func Pool(cnc ConcurrentOperationCore) []interface{} {
 
 	// Split the dataframe into available number of workers parts
 	nWorkers := core.NumWorkers
-	dfPackets := opJ.df.Split(nWorkers)
+	dfPackets := cnc.df.Split(nWorkers)
 
 	// Initialise workers' channels
 	jobs := make(chan WorkerJob, len(dfPackets))
@@ -43,11 +42,7 @@ func Pool(opJ OperationJob) []interface{} {
 
 	// Send jobs
 	for _, packetDf := range dfPackets {
-		job := WorkerJob{
-			df:        packetDf,
-			columns:   opJ.columns,
-			operation: opJ.operation,
-		}
+		job := WorkerJob{df: packetDf, cnc: &cnc}
 		jobs <- job
 	}
 	close(jobs)

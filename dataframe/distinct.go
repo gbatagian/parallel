@@ -84,7 +84,7 @@ func distinctOperation(df *Dataframe, columnNames ...string) DistictValues {
 
 func (df *Dataframe) Distinct(columnNames ...string) DistictValues {
 
-	opJ := OperationJob{
+	opJ := ConcurrentOperationCore{
 		df:      df,
 		columns: columnNames,
 		operation: func(df *Dataframe, columnNames ...string) interface{} {
