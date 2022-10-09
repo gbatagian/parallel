@@ -1,7 +1,6 @@
 package dataframe
 
 import (
-	"fmt"
 	"parallel/core"
 	"parallel/row"
 	"testing"
@@ -54,8 +53,30 @@ func TestGroupBy(t *testing.T) {
 		expectedGroupDf = expectedGroupDf.Sort("column_3")
 		gdf = gdf.Sort("column_3")
 		if !gdf.Equals(expectedGroupDf) {
-			fmt.Println(k)
-			gdf.Print()
+			t.Error("Unexcpected group dataframe.")
+		}
+	}
+}
+
+func TestGroupBySingleRecord(t *testing.T) {
+
+	rawValues := [][]interface{}{
+		{1, 2, false, "a", 5, true},
+	}
+
+	df := CreateDataframe(rawValues)
+	gb := df.GroupBy("column_0", "column_1")
+
+	expected_gk := core.Key{Values: []interface{}{1, 2}}
+	expected_gDf := Dataframe{[]row.Row{df.Rows[0]}, df.Schema}
+
+	for k, gdf := range gb.Groups {
+
+		if !(k.Hash() == expected_gk.Hash()) {
+			t.Error("Unexpected group.")
+		}
+
+		if !gdf.Equals(expected_gDf) {
 			t.Error("Unexcpected group dataframe.")
 		}
 	}

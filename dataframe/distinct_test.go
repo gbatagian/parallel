@@ -45,3 +45,28 @@ func TestDistinct(t *testing.T) {
 	}
 
 }
+
+func TestDistinctSingleRecord(t *testing.T) {
+
+	rawValues := [][]interface{}{
+		{1, 2, false, "a", 5, true},
+	}
+
+	df := CreateDataframe(rawValues)
+	distictVal := df.Distinct("column_0", "column_1")
+	distinctDf := distictVal.AsDataframe()
+
+	expectedDistinctDf := CreateDataframe(
+		[][]interface{}{{1, 2}},
+		schema.Schema{
+			Columns: []column.Column{
+				{Name: "column_0", Type: types.Int},
+				{Name: "column_1", Type: types.Int},
+			},
+		},
+	)
+	if !(distinctDf.Equals(expectedDistinctDf)) {
+		t.Error("Unexpected distinct values dataframe.")
+	}
+
+}
