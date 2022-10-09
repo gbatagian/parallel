@@ -43,7 +43,7 @@ func (gb *GroupBy) Concat(gbStructs ...GroupBy) GroupBy {
 	return *gb
 }
 
-func (df *Dataframe) groupByOperation(columnNames ...string) GroupBy {
+func groupByOperation(df *Dataframe, columnNames ...string) GroupBy {
 
 	columnIndexes := make([]int, len(columnNames))
 	for idx, name := range columnNames {
@@ -77,52 +77,28 @@ func (df *Dataframe) groupByOperation(columnNames ...string) GroupBy {
 
 func (df *Dataframe) GroupBy(columnNames ...string) GroupBy {
 
-	return groupByPool(df, columnNames...)
-
-}
-
-type groupByJob struct {
-	df      Dataframe
-	columns []string
-}
-
-func groupByWorker(jobs <-chan groupByJob, results chan<- GroupBy) {
-
-	for gbJob := range jobs {
-		results <- gbJob.df.groupByOperation(gbJob.columns...)
+	opJ := OperationJob{
+		df:      df,
+		columns: columnNames,
+		operation: func(df *Dataframe, columnNames ...string) interface{} {
+			return groupByOperation(df, columnNames...)
+		},
 	}
 
-}
+	results := Pool(opJ)
+	lenResults := len(results)
 
-func groupByPool(df *Dataframe, columnNames ...string) GroupBy {
-
-	nWorkers := core.NumWorkers
-	dfPackets := df.Split(nWorkers)
-
-	// Initialise workers channels
-	jobs := make(chan groupByJob, len(dfPackets))
-	results := make(chan GroupBy, len(dfPackets))
-
-	for i := 1; i <= nWorkers; i++ {
-		go groupByWorker(jobs, results)
+	if lenResults == 1 {
+		return results[0].(GroupBy)
 	}
 
-	// Load sender channel
-	for _, packetDf := range dfPackets {
-		gbJob := groupByJob{df: packetDf, columns: columnNames}
-		jobs <- gbJob
-	}
-	close(jobs)
-
-	// Collect from receiver channel
-	var gbPackets []GroupBy
-	for i := 1; i <= len(dfPackets); i++ {
-		gbPackets = append(gbPackets, <-results)
+	gbPackets := make([]GroupBy, lenResults)
+	for idx, r := range results {
+		if gb, ok := r.(GroupBy); ok {
+			gbPackets[idx] = gb
+		}
 	}
 
-	if len(gbPackets) == 1 {
-		return gbPackets[0]
-	}
 	return gbPackets[0].Concat(gbPackets[1:]...)
 
 }

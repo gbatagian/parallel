@@ -6,19 +6,19 @@ import (
 )
 
 type DistictValues struct {
-	ValuesKey []*core.Key
+	ValuesKey []core.Key
 	Schema    schema.Schema
 }
 
-func (d *DistictValues) ValuesExist(vk core.Key) (bool, *core.Key) {
+func (d *DistictValues) ValuesExist(vk core.Key) (bool, core.Key) {
 
 	for _, k := range d.ValuesKey {
-		key := *k
+		key := k
 		if vk.Hash() == key.Hash() {
 			return true, k
 		}
 	}
-	return false, nil
+	return false, core.Key{}
 
 }
 
@@ -28,11 +28,11 @@ func (dv *DistictValues) Concat(dvStructs ...DistictValues) DistictValues {
 	for _, dvElement := range dvStructs {
 		for _, k := range dvElement.ValuesKey {
 
-			key := *k
+			key := k
 			gkExists, _ := dv.ValuesExist(key)
 
 			if !gkExists {
-				dv.ValuesKey = append(dv.ValuesKey, &key)
+				dv.ValuesKey = append(dv.ValuesKey, key)
 			}
 		}
 	}
@@ -44,14 +44,14 @@ func (d *DistictValues) AsDataframe() Dataframe {
 
 	rows := make([][]interface{}, len(d.ValuesKey))
 	for idx, vk := range d.ValuesKey {
-		valuesKey := *vk
+		valuesKey := vk
 		rows[idx] = valuesKey.Values
 	}
 	return CreateDataframe(rows, d.Schema)
 
 }
 
-func (df *Dataframe) distinctOperation(columnNames ...string) DistictValues {
+func distinctOperation(df *Dataframe, columnNames ...string) DistictValues {
 
 	columnIndexes := make([]int, len(columnNames))
 	columnsSchema := schema.Schema{}
@@ -72,7 +72,7 @@ func (df *Dataframe) distinctOperation(columnNames ...string) DistictValues {
 		vk := core.Key{Values: v}
 		vkExists, _ := distinctValues.ValuesExist(vk)
 		if !(vkExists) {
-			distinctValues.ValuesKey = append(distinctValues.ValuesKey, &vk)
+			distinctValues.ValuesKey = append(distinctValues.ValuesKey, vk)
 		}
 
 	}
@@ -84,52 +84,28 @@ func (df *Dataframe) distinctOperation(columnNames ...string) DistictValues {
 
 func (df *Dataframe) Distinct(columnNames ...string) DistictValues {
 
-	return distinctPool(df, columnNames...)
-
-}
-
-type distinctJob struct {
-	df      Dataframe
-	columns []string
-}
-
-func distinctWorker(jobs <-chan distinctJob, resluts chan<- DistictValues) {
-
-	for dvJob := range jobs {
-		resluts <- dvJob.df.distinctOperation(dvJob.columns...)
+	opJ := OperationJob{
+		df:      df,
+		columns: columnNames,
+		operation: func(df *Dataframe, columnNames ...string) interface{} {
+			return distinctOperation(df, columnNames...)
+		},
 	}
 
-}
+	results := Pool(opJ)
+	lenResults := len(results)
 
-func distinctPool(df *Dataframe, columnNames ...string) DistictValues {
-
-	nWorkers := core.NumWorkers
-	dfPackets := df.Split(nWorkers)
-
-	// Initialise workers channels
-	jobs := make(chan distinctJob, len(dfPackets))
-	results := make(chan DistictValues, len(dfPackets))
-
-	for i := 1; i <= nWorkers; i++ {
-		go distinctWorker(jobs, results)
+	if lenResults == 1 {
+		return results[0].(DistictValues)
 	}
 
-	// Load sender channel
-	for _, packetDf := range dfPackets {
-		dvJob := distinctJob{df: packetDf, columns: columnNames}
-		jobs <- dvJob
-	}
-	close(jobs)
-
-	// Collect from receiver channel
-	var dvPackets []DistictValues
-	for i := 1; i <= len(dfPackets); i++ {
-		dvPackets = append(dvPackets, <-results)
+	dvPackets := make([]DistictValues, lenResults)
+	for idx, r := range results {
+		if dvP, ok := r.(DistictValues); ok {
+			dvPackets[idx] = dvP
+		}
 	}
 
-	if len(dvPackets) == 1 {
-		return dvPackets[0]
-	}
 	return dvPackets[0].Concat(dvPackets[1:]...)
 
 }

@@ -40,7 +40,6 @@ func TestDistinct(t *testing.T) {
 			},
 		},
 	)
-
 	if !(distinctDf.Equals(expectedDistinctDf)) {
 		t.Error("Unexpected distinct values dataframe.")
 	}
