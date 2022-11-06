@@ -12,6 +12,8 @@ import (
 type Dataframe struct {
 	Rows   []row.Row
 	Schema schema.Schema
+
+	updateValues bool
 }
 
 func (df1 *Dataframe) Equals(df2 Dataframe) bool {
@@ -147,6 +149,7 @@ func (df *Dataframe) updateColumnsTypesBasedOnSchema(s schema.Schema) {
 	for idx, c := range s.Columns {
 		if !(types.IsType(df.Schema.Columns[idx].Type, c.Type)) {
 			df.updateColumnTypeInPosition(idx, c.Type)
+			df.updateValues = true
 		}
 	}
 }
@@ -184,7 +187,7 @@ func (df *Dataframe) updateDfSchemaFromRowWithmLargerSchema(r row.Row) {
 
 func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r *row.Row) {
 
-	// Add dummy values to the row in order to complu with the df larger schema
+	// Add dummy values to the row in order to alighn with the df larger schema
 	rowLen := len(r.Schema.Columns)
 	var dummyValues []interface{}
 
@@ -205,6 +208,7 @@ func (df *Dataframe) applyDfSchemaInRowWithSmallerSchema(r *row.Row) {
 		}
 	}
 
+	// Append dummy values to the row
 	df.Rows[len(df.Rows)-1].Values = append(df.Rows[len(df.Rows)-1].Values, dummyValues...)
 	df.Rows[len(df.Rows)-1].Schema = df.Schema
 
@@ -217,64 +221,52 @@ func (df *Dataframe) updateColumnTypeInPosition(idx int, t types.DataType) {
 		switch t {
 		case types.Float:
 			df.Schema.Columns[idx].Type = types.Float
-			df.updateValuesFormatInPosition(idx, types.Float)
 		default:
 			df.Schema.Columns[idx].Type = types.String
-			df.updateValuesFormatInPosition(idx, types.String)
 		}
 	case types.Float:
 		switch t {
 		case types.Int:
 			df.Schema.Columns[idx].Type = types.Float
-			df.updateValuesFormatInPosition(idx, types.Float)
 		default:
 			df.Schema.Columns[idx].Type = types.String
-			df.updateValuesFormatInPosition(idx, types.String)
 		}
 	default:
 		df.Schema.Columns[idx].Type = types.String
-		df.updateValuesFormatInPosition(idx, types.String)
 	}
 
 }
 
-func (df *Dataframe) updateValuesFormatInPosition(idx int, f types.DataType) {
-
-	switch f {
-	case types.Int:
-		for _, r := range df.Rows {
-			if !types.IsType(r.Values[idx], f) {
-				if v, ok := r.Values[idx].(float64); ok {
-					r.Values[idx] = int(v)
-				} else if v, ok := r.Values[idx].(float32); ok {
-					r.Values[idx] = int(v)
+func (df *Dataframe) updateValuesFormat() {
+	for _, r := range df.Rows {
+		for cIdx, c := range df.Schema.Columns {
+			if !types.IsType(r.Values[cIdx], c.Type) {
+				fmt.Println(r.Values[cIdx], c.Type)
+				switch c.Type {
+				case types.Int:
+					if v, ok := r.Values[cIdx].(float64); ok {
+						r.Values[cIdx] = int(v)
+					} else if v, ok := r.Values[cIdx].(float32); ok {
+						r.Values[cIdx] = int(v)
+					}
+				case types.Float:
+					if v, ok := r.Values[cIdx].(int); ok {
+						r.Values[cIdx] = float64(v)
+					} else if v, ok := r.Values[cIdx].(int8); ok {
+						r.Values[cIdx] = float64(v)
+					} else if v, ok := r.Values[cIdx].(int16); ok {
+						r.Values[cIdx] = float64(v)
+					} else if v, ok := r.Values[cIdx].(int32); ok {
+						r.Values[cIdx] = float64(v)
+					} else if v, ok := r.Values[cIdx].(int64); ok {
+						r.Values[cIdx] = float64(v)
+					}
+				default:
+					r.Values[cIdx] = fmt.Sprintf("%v", r.Values[cIdx])
 				}
-			}
-		}
-	case types.Float:
-		for _, r := range df.Rows {
-			if !types.IsType(r.Values[idx], f) {
-				if v, ok := r.Values[idx].(int); ok {
-					r.Values[idx] = float64(v)
-				} else if v, ok := r.Values[idx].(int8); ok {
-					r.Values[idx] = float64(v)
-				} else if v, ok := r.Values[idx].(int16); ok {
-					r.Values[idx] = float64(v)
-				} else if v, ok := r.Values[idx].(int32); ok {
-					r.Values[idx] = float64(v)
-				} else if v, ok := r.Values[idx].(int64); ok {
-					r.Values[idx] = float64(v)
-				}
-			}
-		}
-	default:
-		for _, r := range df.Rows {
-			if !types.IsType(r.Values[idx], f) {
-				r.Values[idx] = fmt.Sprintf("%v", r.Values[idx])
 			}
 		}
 	}
-
 }
 
 func SchemaOK(i interface{}, s schema.Schema) bool {
@@ -302,14 +294,20 @@ func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {
 		schema := row.Schema
 		df.Rows = append(df.Rows, row)
 
+		// Initialise schema
 		if len(df.Schema.Columns) == 0 {
 			df.Schema = schema
-		} // Initialise schema
+		}
 
+		// Update schema - if needed
 		if !SchemaOK(row, df.Schema) {
 			df.updateDataframeSchema(row)
-		} // Update schema - if needed
+		}
 
+	}
+
+	if df.updateValues {
+		df.updateValuesFormat()
 	}
 
 	return df
@@ -331,6 +329,10 @@ func createDataframeWithColumnNames(rows [][]interface{}, c []string) Dataframe 
 		if !SchemaOK(row, df.Schema) {
 			df.updateDataframeSchema(row)
 		} // Update schema - if needed
+	}
+
+	if df.updateValues {
+		df.updateValuesFormat()
 	}
 
 	return df
