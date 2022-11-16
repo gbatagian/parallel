@@ -16,7 +16,7 @@ func TestSplit(t *testing.T) {
 		{4, 2, true},
 	}
 
-	df := CreateDataframe(rawValues)
+	df := CreateDataframe(&rawValues)
 	dfPackets := df.Split(3)
 
 	expectedDfPackets := []Dataframe{
@@ -35,7 +35,7 @@ func TestSplitPacketsMoreThanRows(t *testing.T) {
 
 	rawValues := [][]interface{}{}
 
-	df := CreateDataframe(rawValues)
+	df := CreateDataframe(&rawValues)
 	dfPackets := df.Split(3)
 
 	if len(dfPackets) != 0 {
@@ -52,7 +52,7 @@ func TestSplitEmptyDf(t *testing.T) {
 		{1, 2, false, "c"},
 	}
 
-	df := CreateDataframe(rawValues)
+	df := CreateDataframe(&rawValues)
 	dfPackets := df.Split(30)
 
 	expectedDfPackets := []Dataframe{

@@ -20,7 +20,7 @@ func TestGroupBy(t *testing.T) {
 		{4, 2, true},
 	}
 
-	df := CreateDataframe(rawValues)
+	df := CreateDataframe(&rawValues)
 	gb := df.GroupBy("column_0", "column_1")
 
 	expectedGroupKeys := make(map[string]core.Key)
@@ -64,7 +64,7 @@ func TestGroupBySingleRecord(t *testing.T) {
 		{1, 2, false, "a", 5, true},
 	}
 
-	df := CreateDataframe(rawValues)
+	df := CreateDataframe(&rawValues)
 	gb := df.GroupBy("column_0", "column_1")
 
 	expected_gk := core.Key{Values: []interface{}{1, 2}}

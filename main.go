@@ -1,26 +1,21 @@
 package main
 
-import (
-	"parallel/dataframe"
-)
+import "parallel/dataframe"
 
 func main() {
 
-	raw_values := [][]interface{}{
-		{1, 2, false, "a"},
-		{1, 2, false, "b"},
-		{1, 2, false, "c"},
-		{2, 2, false, "d"},
-		{2, 2, true},
-		{2, 2, false, "e"},
-		{1, 2, false, "f"},
-		{1, 2, false, "g"},
-		{1, 2, true},
+	rawValues := [][]interface{}{
+		{1, 2.1},
+		{2, 2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, 1, true},
+		{3, 2.1, "2022-06-01 19:58:30.991242+00", "b", true},
+		{4},
+		{5, 2.1, 2},
+		{6, 2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a", "true"},
+		{7, 2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, 1, true},
 	}
 
-	d := dataframe.CreateDataframe(raw_values)
+	df := dataframe.CreateDataframe(&rawValues)
 
-	sd := d.Sort("column_0", "~column_2", "column_3")
+	df.Print()
 
-	sd.Print(100)
 }

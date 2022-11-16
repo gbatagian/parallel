@@ -124,59 +124,59 @@ func (r *Row) createSchemaWithColumnNames(c []string) schema.Schema {
 
 }
 
-func createRowNoSchema(v []interface{}) Row {
+func createRowNoSchema(v *[]interface{}) Row {
 
-	r := Row{Values: v}
+	r := Row{Values: *v}
 	r.Schema = r.createSchema()
 
 	return r
 }
 
-func createRowWithColumnNames(v []interface{}, c []string) Row {
+func createRowWithColumnNames(v *[]interface{}, c []string) Row {
 
-	if len(c) != len(v) {
+	if len(c) != len(*v) {
 		msg := fmt.Sprintf(
 			"Uneven sizes for values and columns:\n   - Values: %v (length %d)\n   - Schema: %v (length %d)",
-			v, len(v),
+			v, len(*v),
 			c, len(c),
 		)
 		panic(msg)
 	}
 
-	r := Row{Values: v}
+	r := Row{Values: *v}
 	r.Schema = r.createSchemaWithColumnNames(c)
 
 	return r
 }
 
-func createRowWithSchema(v []interface{}, s schema.Schema) Row {
+func createRowWithSchema(v *[]interface{}, s schema.Schema) Row {
 
-	if len(s.Columns) != len(v) {
+	if len(s.Columns) != len(*v) {
 		msg := fmt.Sprintf(
 			"Uneven sizes for values and schema columns:\n   - Values: %v (length %d)\n   - Schema: %+v (length %d)",
-			v, len(v),
+			v, len(*v),
 			s, len(s.Columns),
 		)
 		panic(msg)
 	}
 
-	for i, value := range v {
+	for i, value := range *v {
 
 		if !(types.IsType(value, s.Columns[i].Type)) {
 			msg := fmt.Sprintf(
 				"Invalid schema provided for row:\n   - Value %v in index position %d is of type %T\n   - Column in schema in position %d is of type %v",
-				value, i, v[i],
+				value, i, (*v)[i],
 				i, s.Columns[i].Type,
 			)
 			panic(msg)
 		}
 	}
 
-	return Row{Values: v, Schema: s}
+	return Row{Values: *v, Schema: s}
 
 }
 
-func CreateRow(v []interface{}, i ...interface{}) Row {
+func CreateRow(v *[]interface{}, i ...interface{}) Row {
 
 	// Case1: Schema was not provided in row definition.
 	if len(i) == 0 {

@@ -25,7 +25,7 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 		{7, 2.1, "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, 1, true},
 	}
 
-	df = CreateDataframe(rawValues)
+	df = CreateDataframe(&rawValues)
 
 	expectedDfSchema = schema.Schema{
 		Columns: []column.Column{
@@ -78,7 +78,7 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 		{2},
 	}
 
-	df = CreateDataframe(rawValues)
+	df = CreateDataframe(&rawValues)
 
 	expectedDfSchema = schema.Schema{
 		Columns: []column.Column{
@@ -103,7 +103,7 @@ func TestDataframeCreationWithNoSchema(t *testing.T) {
 		{1, false},
 	}
 
-	df = CreateDataframe(rawValues)
+	df = CreateDataframe(&rawValues)
 
 	expectedDfSchema = schema.Schema{
 		Columns: []column.Column{
@@ -133,7 +133,7 @@ func TestDataframeCreationWithColumnNames(t *testing.T) {
 		{"2.1", "2022-06-01 19:58:30.991242+00", "b", true, 2.2, 1, "a", "true"},
 	}
 
-	df := CreateDataframe(rawValues, []string{"a", "b", "c", "d", "e", "f", "g", "h"})
+	df := CreateDataframe(&rawValues, []string{"a", "b", "c", "d", "e", "f", "g", "h"})
 
 	expectedDfSchema := schema.Schema{
 		Columns: []column.Column{
@@ -219,7 +219,7 @@ func TestDataframeCreationWithSchema(t *testing.T) {
 			},
 		},
 	}
-	df := CreateDataframe(rawValues, schema)
+	df := CreateDataframe(&rawValues, schema)
 
 	if !df.Schema.Equals(schema) {
 		t.Error("Schemas should be equal.")
@@ -242,7 +242,7 @@ func TestDataframeColumnNames(t *testing.T) {
 	}
 
 	df := CreateDataframe(
-		[][]interface{}{
+		&[][]interface{}{
 			{1, 0},
 			{0, 1},
 		},
@@ -276,7 +276,7 @@ func TestDataframeColumnTypes(t *testing.T) {
 	}
 
 	df := CreateDataframe(
-		[][]interface{}{
+		&[][]interface{}{
 			{1, 0},
 			{0, 1},
 		},

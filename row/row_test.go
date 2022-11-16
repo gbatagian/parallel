@@ -23,7 +23,7 @@ func TestRowCreationWithSchema(t *testing.T) {
 	}
 	rawData := []interface{}{"A", 1}
 
-	row := CreateRow(rawData, schema)
+	row := CreateRow(&rawData, schema)
 
 	if !row.Equals(Row{Values: rawData, Schema: schema}) {
 		t.Error("Rows should be equal.")
@@ -33,7 +33,7 @@ func TestRowCreationWithSchema(t *testing.T) {
 func TestRowCreationWithNonSchema(t *testing.T) {
 
 	values := []interface{}{"A", 1, 1.444, false}
-	row := CreateRow(values)
+	row := CreateRow(&values)
 
 	if !row.Equals(
 		Row{
@@ -69,7 +69,7 @@ func TestRowCreationWithColumnNames(t *testing.T) {
 
 	values := []interface{}{"A", 1, 1.444, false}
 	row := CreateRow(
-		values,
+		&values,
 		[]string{"A", "B", "C", "D"},
 	)
 

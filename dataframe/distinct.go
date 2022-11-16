@@ -47,7 +47,7 @@ func (d *DistictValues) AsDataframe() Dataframe {
 		valuesKey := vk
 		rows[idx] = valuesKey.Values
 	}
-	return CreateDataframe(rows, d.Schema)
+	return CreateDataframe(&rows, d.Schema)
 
 }
 

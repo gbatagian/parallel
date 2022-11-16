@@ -241,7 +241,6 @@ func (df *Dataframe) updateValuesFormat() {
 	for _, r := range df.Rows {
 		for cIdx, c := range df.Schema.Columns {
 			if !types.IsType(r.Values[cIdx], c.Type) {
-				fmt.Println(r.Values[cIdx], c.Type)
 				switch c.Type {
 				case types.Int:
 					if v, ok := r.Values[cIdx].(float64); ok {
@@ -284,13 +283,13 @@ func SchemaOK(i interface{}, s schema.Schema) bool {
 	return false
 }
 
-func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {
+func createDataframeWithNoSchemaInfo(rows *[][]interface{}) Dataframe {
 
 	df := Dataframe{}
 
-	for _, r := range rows {
+	for _, r := range *rows {
 
-		row := row.CreateRow(r)
+		row := row.CreateRow(&r)
 		schema := row.Schema
 		df.Rows = append(df.Rows, row)
 
@@ -300,7 +299,7 @@ func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {
 		}
 
 		// Update schema - if needed
-		if !SchemaOK(row, df.Schema) {
+		if !SchemaOK(&row, df.Schema) {
 			df.updateDataframeSchema(row)
 		}
 
@@ -314,19 +313,19 @@ func createDataframeWithNoSchemaInfo(rows [][]interface{}) Dataframe {
 
 }
 
-func createDataframeWithColumnNames(rows [][]interface{}, c []string) Dataframe {
+func createDataframeWithColumnNames(rows *[][]interface{}, c []string) Dataframe {
 
 	df := Dataframe{}
 
-	for _, r := range rows {
-		row := row.CreateRow(r, c)
+	for _, r := range *rows {
+		row := row.CreateRow(&r, c)
 		schema := row.Schema
 		df.Rows = append(df.Rows, row)
 		if len(df.Schema.Columns) == 0 {
 			df.Schema = schema
 		} // Initialise schema
 
-		if !SchemaOK(row, df.Schema) {
+		if !SchemaOK(&row, df.Schema) {
 			df.updateDataframeSchema(row)
 		} // Update schema - if needed
 	}
@@ -339,20 +338,20 @@ func createDataframeWithColumnNames(rows [][]interface{}, c []string) Dataframe 
 
 }
 
-func createDataframeWithSchema(rows [][]interface{}, s schema.Schema) Dataframe {
+func createDataframeWithSchema(rows *[][]interface{}, s schema.Schema) Dataframe {
 
 	df := Dataframe{}
 	df.Schema = s
 
-	for _, r := range rows {
-		row := row.CreateRow(r, s)
+	for _, r := range *rows {
+		row := row.CreateRow(&r, s)
 		df.Rows = append(df.Rows, row)
 	}
 
 	return df
 }
 
-func CreateDataframe(rows [][]interface{}, i ...interface{}) Dataframe {
+func CreateDataframe(rows *[][]interface{}, i ...interface{}) Dataframe {
 
 	// Case1: No schema related information was provided in dataframe definition.
 	if len(i) == 0 {

@@ -21,13 +21,13 @@ func TestDistinct(t *testing.T) {
 		{4, 2, true},
 	}
 
-	df := CreateDataframe(rawValues)
+	df := CreateDataframe(&rawValues)
 	distictVal := df.Distinct("column_0", "column_1")
 	distinctDf := distictVal.AsDataframe()
 	distinctDf = distinctDf.Sort("column_0")
 
 	expectedDistinctDf := CreateDataframe(
-		[][]interface{}{
+		&[][]interface{}{
 			{1, 2},
 			{2, 2},
 			{3, 2},
@@ -52,12 +52,12 @@ func TestDistinctSingleRecord(t *testing.T) {
 		{1, 2, false, "a", 5, true},
 	}
 
-	df := CreateDataframe(rawValues)
+	df := CreateDataframe(&rawValues)
 	distictVal := df.Distinct("column_0", "column_1")
 	distinctDf := distictVal.AsDataframe()
 
 	expectedDistinctDf := CreateDataframe(
-		[][]interface{}{{1, 2}},
+		&[][]interface{}{{1, 2}},
 		schema.Schema{
 			Columns: []column.Column{
 				{Name: "column_0", Type: types.Int},

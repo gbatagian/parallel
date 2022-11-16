@@ -63,7 +63,7 @@ func groupByOperation(df *Dataframe, columnNames ...string) GroupBy {
 		gkExists, gkPointer := g.GroupExists(gk)
 
 		if !gkExists {
-			g.Groups[&gk] = CreateDataframe([][]interface{}{row.Values}, df.Schema)
+			g.Groups[&gk] = CreateDataframe(&[][]interface{}{row.Values}, df.Schema)
 		} else {
 			dfGroup := g.Groups[gkPointer]
 			dfGroup.Rows = append(g.Groups[gkPointer].Rows, row)

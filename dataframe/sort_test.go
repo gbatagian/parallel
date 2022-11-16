@@ -21,12 +21,12 @@ func TestSort(t *testing.T) {
 		{1, 2, true},
 	}
 
-	df := CreateDataframe(raw_values)
+	df := CreateDataframe(&raw_values)
 
 	sd := df.Sort("column_0", "~column_2", "column_3")
 
 	expected_df := CreateDataframe(
-		[][]interface{}{
+		&[][]interface{}{
 			{1, 2, false, "a"},
 			{1, 2, false, "b"},
 			{1, 2, false, "c"},
